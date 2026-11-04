@@ -2,6 +2,8 @@
 
 Next.js 14 + Supabase (database, login, image storage) + Razorpay (payments) + Resend (emails), hosted on Vercel at **www.taeken.in**.
 
+
+
 ## 1. Put the code on GitHub
 1. Create a free account at github.com → **New repository** → name `taeken-store` → Private → Create.
 2. Unzip this project. In a terminal inside the folder:
