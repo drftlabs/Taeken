@@ -52,7 +52,7 @@ export default function ProductForm({ product, collections, tags, colors, sizeKe
       <div className="panel"><h2 style={{ marginTop: 0 }}>Product story</h2>
         <p className="mut" style={{ fontSize: 12, marginBottom: 10 }}>Longer description under the product. Add headings, bullet points and photos (lifestyle shots, detail shots, size charts).</p>
         <RichText value={p.long_description} onChange={set("long_description")} />
-        <div style={{ marginTop: 14 }}><Field f={{ name: "details", label: "Spec bullets (one per line)", type: "textarea", full: true, help: "Shown in the Details accordion: upper material, sole, fit." }} value={p.details} onChange={set("details")} /></div>
+        <div className="af" style={{ marginTop: 14 }}><Field f={{ name: "details", label: "Spec bullets (one per line)", type: "textarea", full: true, help: "Shown in the Details accordion: upper material, sole, fit." }} value={p.details} onChange={set("details")} /></div>
       </div>
 
       <div className="panel"><h2 style={{ marginTop: 0 }}>Organisation</h2>

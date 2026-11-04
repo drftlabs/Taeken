@@ -242,7 +242,7 @@ footer{border-top:1px solid var(--line);padding:clamp(56px,7vw,100px) var(--pad)
 /* ============ 10. BAG DRAWER + TOAST ============ */
 .drawer{position:fixed;inset:0;z-index:150;visibility:hidden;transition:visibility 0s .35s}.drawer.open{visibility:visible;transition-delay:0s}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.66);opacity:0;transition:opacity .3s}.drawer.open .scrim{opacity:1}
-.panel{position:absolute;top:0;right:0;bottom:0;width:min(440px,100%);background:#141415;border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s var(--ease)}
+.drawer>.panel{position:absolute;top:0;right:0;bottom:0;width:min(440px,100%);background:#141415;border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s var(--ease)}
 .drawer.open .panel{transform:none}
 .d-head{display:flex;justify-content:space-between;align-items:center;padding:12px 12px 12px 20px;border-bottom:1px solid var(--line)}
 .d-head h2{font-family:var(--display);font-weight:400;font-size:28px;letter-spacing:.06em;text-transform:uppercase}.d-head h2 span{color:var(--concrete);font-size:18px}
