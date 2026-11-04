@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Ticker from "@/components/Ticker";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import TrustBar from "@/components/TrustBar";
 import QuickCheckout from "@/components/QuickCheckout";
 import { shippingCfg } from "@/lib/pricing";
 import { getSettings, getCollections } from "@/lib/data";
@@ -18,6 +19,7 @@ export default async function SiteLayout({ children }) {
       <a className="skip" href="#main">Skip to content</a>
       <Header ticker={<Ticker items={settings.ticker} />} />
       <main id="main">{children}</main>
+      <TrustBar s={settings} />
       <Footer settings={settings} collections={collections} />
       <CartDrawer />
       <QuickCheckout />

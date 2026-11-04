@@ -14,7 +14,7 @@ const fieldsByType = {
     { name: "config.plate", label: "Number plate", type: "text", help: "e.g. 001" }, { name: "config.kicker", label: "Small label", type: "text" },
     { name: "config.title", label: "Headline", type: "text", help: "Use | for a line break." }, { name: "config.cta_text", label: "Button text", type: "text" }, { name: "config.link", label: "Button link", type: "text" },
     { name: "config.image", label: "Desktop image", type: "image", folder: "banners", hint: "Wide, about 2400×1200px.", full: true },
-    { name: "config.image_mobile", label: "Mobile image (optional)", type: "image", folder: "banners", full: true }, { name: "config.position", label: "Image focus", type: "text" }],
+    { name: "config.image_mobile", label: "Mobile image (optional)", type: "image", folder: "banners", full: true }, { name: "config.fit", label: "Image fit", type: "select", options: [["cover", "Fill the banner (crops edges)"], ["contain", "Show the whole image (good for 1:1 / square)"]] }, { name: "config.position", label: "Image focus", type: "text" }],
   collections: [...base, { name: "config.eyebrow", label: "Small heading", type: "text" }, { name: "config.title", label: "Heading", type: "text" }, { name: "__note", label: "", type: "text" }],
   story: [...base,
     { name: "config.eyebrow", label: "Small heading", type: "text" }, { name: "config.title", label: "Heading", type: "text", help: "Use | for a line break." },

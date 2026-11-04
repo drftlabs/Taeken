@@ -27,8 +27,8 @@ Next.js 14 + Supabase (database, login, image storage) + Razorpay (payments) + R
 5. **Authentication → Email Templates → Magic Link**: customers log in with a 6-digit code, so include `{{ .Token }}` in the template body (e.g. "Your Taeken login code: {{ .Token }}").
 6. **Project Settings → API**: copy the Project URL, the `anon` key and the `service_role` key (keep the last one secret).
 
-### 2b. Updating an existing store (IMPORTANT, v2 upgrade)
-If you already ran `schema.sql` and `seed.sql` earlier, open **SQL Editor**, paste all of `supabase/migration_2.sql` and Run. It adds the new product fields (SKU, collections, SEO, story), COD/discount columns on orders, and the discount-codes table. Do this **before** (or right after) deploying the new code. Fresh installs don't need it because `schema.sql` already contains it.
+### 2b. Updating an existing store (IMPORTANT, v2/v3 upgrade)
+If you already ran `schema.sql` and `seed.sql` earlier, open **SQL Editor**, run `supabase/migration_2.sql`, then `supabase/migration_3.sql` (adds extra product photos). It adds the new product fields (SKU, collections, SEO, story), COD/discount columns on orders, and the discount-codes table. Do this **before** (or right after) deploying the new code. Fresh installs don't need it because `schema.sql` already contains it.
 
 ## 3. Resend (emails, optional but recommended)
 resend.com → add domain `taeken.in` and add the DNS records it shows → create an API key. Set `EMAIL_FROM` like `Taeken <orders@taeken.in>`. Without a key the store works but sends no emails.
@@ -55,6 +55,8 @@ New in v2:
 - **Discount codes**: percent or flat, minimum order, max uses, expiry. A sample `WELCOME10` is created.
 - **Settings → Cash on delivery**: on/off, % paid upfront (default 10), COD fee (default ₹99). WhatsApp number adds a chat button.
 - Orders show **COD: collect ₹X**. The orders CSV has `payment_method`, `paid_online`, `cod_to_collect` columns for your courier. Tick "cash collected" on the order when the courier remits.
+
+v3: colour is now selectable and saved on orders and emails (display only, no per-colour stock or photos). Product page has an extra photo block (any shape), recently viewed, trust bar, delivery date estimate and 7-day returns (days editable in Settings). Product cards open a colour and size picker before adding, with a fly-to-bag animation and a pulsing bag.
 
 Everything from v1:
 - **Products**: add/edit, upload transparent PNGs (straight to Supabase), prices, stock per UK size, colours, tags, collection, show/hide.

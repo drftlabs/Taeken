@@ -20,7 +20,7 @@ export default async function OrderPage({ params }) {
       </div>
       <h2>Items</h2>
       <div className="tblwrap"><table className="tbl"><thead><tr><th></th><th>Product</th><th>UK size</th><th>Qty</th><th>Price</th></tr></thead><tbody>
-        {o.items.map((i, k) => <tr key={k}><td><div className="thumbs-adm">{i.image && <img src={i.image} alt="" />}</div></td><td>{i.name}</td><td>{i.size}</td><td>{i.qty}</td><td>{inr(i.price * i.qty)}</td></tr>)}
+        {o.items.map((i, k) => <tr key={k}><td><div className="thumbs-adm">{i.image && <img src={i.image} alt="" />}</div></td><td>{i.name}{i.color && <span className="mut"> · {i.color}</span>}</td><td>{i.size}</td><td>{i.qty}</td><td>{inr(i.price * i.qty)}</td></tr>)}
       </tbody></table></div>
       <OrderControls order={o} />
     </>

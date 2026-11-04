@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useShop } from "./ShopProvider";
-import { inr, STATES } from "@/lib/format";
+import { inr, STATES, etaRange } from "@/lib/format";
 import { priceOrder } from "@/lib/pricing";
 import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
@@ -17,12 +17,13 @@ function loadRzp() {
 const EMPTY = { name: "", email: "", phone: "", pin: "", area: "", line1: "", line2: "", city: "", state: "" };
 
 export default function CheckoutForm({ modal = false, onClose }) {
-  const { items, subtotal, shipping: cfg, clear, email: loginEmail, ready } = useShop();
+  const { items, subtotal, shipping: cfg, clear, setQty, remove, email: loginEmail, ready } = useShop();
   const router = useRouter();
   const [f, setF] = useState(EMPTY), [areas, setAreas] = useState([]), [pinMsg, setPinMsg] = useState("");
   const [method, setMethod] = useState("online"), [code, setCode] = useState(""), [rule, setRule] = useState(null), [codeMsg, setCodeMsg] = useState(null);
   const [busy, setBusy] = useState(false), [err, setErr] = useState("");
-  const lastPin = useRef("");
+  const lastPin = useRef(""), [eta, setEta] = useState("");
+  useEffect(() => { setEta(etaRange(cfg.etaMin || 5, cfg.etaMax || 8)); }, [cfg.etaMin, cfg.etaMax]);
 
   // remember details on this device so the next order is one tap
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem("tk_co") || "null"); if (s) { setF((x) => ({ ...x, ...s })); lastPin.current = s.pin || ""; } } catch {} }, []);
@@ -63,7 +64,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
     setBusy(true);
     const done = (num, due) => { clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}`); };
     try {
-      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
+      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
       const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not start payment");
       if (d.cod) return done(d.orderNumber, d.due);
       await loadRzp();
@@ -117,8 +118,10 @@ export default function CheckoutForm({ modal = false, onClose }) {
         <>
           <section className="co-step reveal">
             <h2><i>03</i>Order summary</h2>
+            {eta && <p className="co-eta">🚚 Estimated delivery: <b>{eta}</b></p>}
             <div className="co-sum">
-              {items.map((i) => <div className="li" key={i.id + i.size}><div className="thumb">{i.image && <img src={i.image} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size} × {i.qty}</small></div><div className="pr">{inr(i.price * i.qty)}</div></div>)}
+              {items.map((i) => <div className="li" key={i.id + i.size + (i.color || "")}><div className="thumb">{i.image && <img src={i.image} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size}{i.colorName ? ` · ${i.colorName}` : ""}</small>
+                <div className="co-qty"><button type="button" aria-label="Decrease quantity" onClick={() => setQty(i.id, i.size, i.qty - 1, i.color)}>−</button><span>{i.qty}</span><button type="button" aria-label="Increase quantity" onClick={() => setQty(i.id, i.size, Math.min(10, i.qty + 1), i.color)}>+</button><button type="button" className="co-rm" onClick={() => remove(i.id, i.size, i.color)}>Remove</button></div></div><div className="pr">{inr(i.price * i.qty)}</div></div>)}
               <div className="code-row">{rule ? <div className="code-ok"><b>{rule.code}</b> applied <button type="button" onClick={() => { setRule(null); setCode(""); setCodeMsg(null); }}>Remove</button></div> : <><input aria-label="Discount code" placeholder="Discount code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyCode())} /><button type="button" onClick={applyCode}>Apply</button></>}</div>
               {codeMsg && <p className={"hint" + (codeMsg.ok ? " ok" : " bad")}>{codeMsg.t}</p>}
               <div className="line"><span>Subtotal</span><span>{inr(price.subtotal)}</span></div>
@@ -152,7 +155,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
 
           {err && <p className="msg-err" role="alert">{err}</p>}
           <button className="btn co-pay" type="submit" disabled={busy}>{busy ? "Opening payment…" : method === "cod" ? (price.payNow ? <>Pay {inr(price.payNow)} now &amp; confirm COD <Arrow /></> : <>Place COD order <Arrow /></>) : <>Pay {inr(price.total)} <Arrow /></>}</button>
-          <div className="secure-row"><span>🔒 Secure payment by Razorpay</span><span>↺ Easy size exchange</span><span>✓ Your card details never touch our server</span></div>
+          <div className="secure-row"><span>🔒 Secure payment by Razorpay</span><span>↺ {cfg.returnDays}-day returns &amp; exchange</span><span>✓ Your card details never touch our server</span></div>
           <p className="secure">By ordering you agree to our <Link className="link" href="/policies/terms" style={{ fontSize: 12 }} onClick={onClose}>Terms</Link> and <Link className="link" href="/policies/returns" style={{ fontSize: 12 }} onClick={onClose}>Return Policy</Link>.</p>
         </>
       )}

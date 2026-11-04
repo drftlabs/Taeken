@@ -8,7 +8,7 @@ import { slugify, inr } from "@/lib/format";
 
 export default function ProductForm({ product, collections, tags, colors, sizeKeys }) {
   const isNew = !product;
-  const blank = { name: "", slug: "", price: "", compare_price: "", cost_price: "", sku: "", barcode: "", weight_g: "", vendor: "Taeken", product_type: "", description: "", long_description: "", details: "", seo_title: "", seo_description: "", images: [], colors: [], tags: [], sizes: Object.fromEntries(sizeKeys.map((s) => [s, 0])), collection_ids: [], active: true, featured: false, low_stock: 3, sort_order: 0 };
+  const blank = { name: "", slug: "", price: "", compare_price: "", cost_price: "", sku: "", barcode: "", weight_g: "", vendor: "Taeken", product_type: "", description: "", long_description: "", details: "", seo_title: "", seo_description: "", images: [], extra_images: [], colors: [], tags: [], sizes: Object.fromEntries(sizeKeys.map((s) => [s, 0])), collection_ids: [], active: true, featured: false, low_stock: 3, sort_order: 0 };
   const init = product ? { ...blank, ...Object.fromEntries(Object.entries(product).map(([k, v]) => [k, v ?? blank[k] ?? ""])), collection_ids: product.collection_ids?.length ? product.collection_ids : product.collection_id ? [product.collection_id] : [] } : blank;
   const [p, setP] = useState(init);
   const [msg, setMsg] = useState(null), [pending, start] = useTransition(), [up, setUp] = useState(false), router = useRouter();
@@ -19,6 +19,12 @@ export default function ProductForm({ product, collections, tags, colors, sizeKe
     try { const urls = []; for (const f of e.target.files) urls.push(await uploadImage(f, "products")); setP((x) => ({ ...x, images: [...x.images, ...urls] })); } catch (x) { setMsg({ err: x.message }); }
     setUp(false); e.target.value = "";
   }
+  async function addExtra(e) {
+    setUp(true); setMsg(null);
+    try { const urls = []; for (const f of e.target.files) urls.push(await uploadImage(f, "products")); setP((x) => ({ ...x, extra_images: [...(x.extra_images || []), ...urls] })); } catch (x) { setMsg({ err: x.message }); }
+    setUp(false); e.target.value = "";
+  }
+  const moveX = (i, d) => setP((x) => { const a = [...(x.extra_images || [])]; const j = i + d; if (j < 0 || j >= a.length) return x; [a[i], a[j]] = [a[j], a[i]]; return { ...x, extra_images: a }; });
   const move = (i, d) => setP((x) => { const a = [...x.images]; const j = i + d; if (j < 0 || j >= a.length) return x; [a[i], a[j]] = [a[j], a[i]]; return { ...x, images: a }; });
   const total = Object.values(p.sizes).reduce((t, n) => t + (Number(n) || 0), 0);
   const margin = p.price && p.cost_price ? Math.round(((p.price - p.cost_price) / p.price) * 100) : null;
@@ -49,8 +55,16 @@ export default function ProductForm({ product, collections, tags, colors, sizeKe
         </div>
       </div>
 
+      <div className="panel"><h2 style={{ marginTop: 0 }}>Extra photos (any size)</h2>
+        <p className="hint mut" style={{ marginBottom: 12, fontSize: 12 }}>A separate “Look closer” block under the description: lifestyle shots, details, size chart, any shape (square, tall or wide). They are not part of the main slider.</p>
+        <div className="gallery-adm">
+          {(p.extra_images || []).map((src, i) => <div className="g" key={src + i}><img src={src} alt="" /><button className="x" onClick={() => setP((x) => ({ ...x, extra_images: x.extra_images.filter((_, k) => k !== i) }))} aria-label="Remove image">×</button>{i > 0 && <button className="l" onClick={() => moveX(i, -1)} aria-label="Move earlier">←</button>}</div>)}
+          <label className="abtn ghost" style={{ height: 96, width: 96, justifyContent: "center", cursor: "pointer" }}>{up ? "…" : "+ Add"}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden onChange={addExtra} /></label>
+        </div>
+      </div>
+
       <div className="panel"><h2 style={{ marginTop: 0 }}>Product story</h2>
-        <p className="mut" style={{ fontSize: 12, marginBottom: 10 }}>Longer description under the product. Add headings, bullet points and photos (lifestyle shots, detail shots, size charts).</p>
+        <p className="mut" style={{ fontSize: 12, marginBottom: 10 }}>Longer description under the product. Add headings, bullet points and photos. Images placed on consecutive lines sit side by side (square 1:1 photos look great in pairs).</p>
         <RichText value={p.long_description} onChange={set("long_description")} />
         <div className="af" style={{ marginTop: 14 }}><Field f={{ name: "details", label: "Spec bullets (one per line)", type: "textarea", full: true, help: "Shown in the Details accordion: upper material, sole, fit." }} value={p.details} onChange={set("details")} /></div>
       </div>

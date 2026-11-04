@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { lookupPin } from "@/lib/pin";
+import { etaRange } from "@/lib/format";
 
 // "Check delivery" box: reassures the shopper before they commit (delivery time + COD availability).
-export default function PinCheck({ days, cod }) {
-  const [pin, setPin] = useState(""), [res, setRes] = useState(null), [busy, setBusy] = useState(false);
+export default function PinCheck({ days, cod, etaMin = 5, etaMax = 8 }) {
+  const [eta, setEta] = useState(""), [pin, setPin] = useState(""), [res, setRes] = useState(null), [busy, setBusy] = useState(false);
+  useEffect(() => { setEta(etaRange(etaMin, etaMax)); }, [etaMin, etaMax]);
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem("tk_co") || "null"); if (s?.pin) setPin(s.pin); } catch {} }, []);
   useEffect(() => {
     if (pin.length !== 6) { setRes(null); return; }
@@ -19,6 +21,7 @@ export default function PinCheck({ days, cod }) {
       {res && !res.bad && <p className="pin-ok">Delivers to <b>{res.city}{res.state ? `, ${res.state}` : ""}</b> in {days}{cod ? " · Cash on delivery available" : ""}</p>}
       {res?.bad && <p className="pin-bad">We couldn't find that pin code. Double-check it.</p>}
       {!res && <p className="pin-hint">Usually delivered in {days}{cod ? " · COD available" : ""}</p>}
+      {eta && <p className="pin-eta">🚚 Order today, get it by <b>{eta}</b></p>}
     </div>
   );
 }

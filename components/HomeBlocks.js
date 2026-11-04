@@ -25,7 +25,7 @@ export function BannerBlock({ c }) {
   const next = c.variant === "next";
   return (
     <section className={"banner" + (next ? " next" : "")} aria-label={c.title}>
-      <Media src={c.image} mobile={c.image_mobile} alt={String(c.title || "").replace("|", " ")} position={c.position} ghost={next ? "闘" : "走"} tag={next ? "IMG 06" : "IMG 04"} />
+      <Media src={c.image} mobile={c.image_mobile} alt={String(c.title || "").replace("|", " ")} position={c.position} fit={c.fit} ghost={next ? "闘" : "走"} tag={next ? "IMG 06" : "IMG 04"} />
       <div className="shade" /><div className="tape" aria-hidden="true" />
       {!next && <span className="vert" aria-hidden="true">走り屋</span>}
       <div className="b-in">

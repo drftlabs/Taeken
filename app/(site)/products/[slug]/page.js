@@ -7,7 +7,8 @@ import ProductGrid from "@/components/ProductGrid";
 import PinCheck from "@/components/PinCheck";
 import Prose from "@/components/Prose";
 import { shippingCfg } from "@/lib/pricing";
-import { inr, SITE_URL } from "@/lib/format";
+import RecentlyViewed from "@/components/RecentlyViewed";
+import { inr, SITE_URL, kanjiFor } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -35,20 +36,19 @@ export default async function ProductPage({ params }) {
       <div className="wrap">
         <div className="crumbs"><Link href="/">Home</Link>{col && <Link href={`/collections/${col.slug}`}>{col.name}</Link>}<span>{p.name}</span></div>
         <div className="pdp">
-          <Gallery images={p.images || []} name={p.name} />
+          <Gallery images={p.images || []} name={p.name} kanji={kanjiFor(p.slug)} />
           <div>
             {p.tagObjs?.length > 0 && <div className="tags">{p.tagObjs.map((t) => <span key={t.slug} className="tag" style={{ background: t.bg, color: t.fg }}>{t.name}</span>)}</div>}
             <h1 className="pdp-name">{p.name}</h1>
             <div className="pdp-price"><span>{inr(p.price)}</span>{p.compare_price > p.price && <s>{inr(p.compare_price)}</s>}</div>
-            <p className="pdp-tax">Inclusive of all taxes. {Number(settings.free_shipping_min) > 0 && <>Free shipping above {inr(settings.free_shipping_min)}.</>}</p>
+            <p className="pdp-tax">Inclusive of all taxes.</p>
             {p.description && <p className="pdp-desc">{p.description}</p>}
-            {p.colors?.length > 0 && <><div className="opt-label"><span>Colour</span></div><div className="pdp-sw">{p.colors.map((c) => <span key={c}><i style={{ background: cmap[c]?.hex || "#777" }} />{cmap[c]?.name || c}</span>)}</div></>}
-            <ProductBuy p={p} sizeKeys={sizeKeys} />
-            <PinCheck days={settings.delivery_days} cod={cfg.codEnabled} />
+            <ProductBuy p={p} sizeKeys={sizeKeys} cod={cfg.codEnabled} colorOpts={(p.colors || []).map((c) => ({ slug: c, name: cmap[c]?.name || c, hex: cmap[c]?.hex || "#777" }))} />
+            <PinCheck days={settings.delivery_days} cod={cfg.codEnabled} etaMin={cfg.etaMin} etaMax={cfg.etaMax} />
             <ul className="trust2">
               <li><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg><b>Secure payment</b><small>UPI, cards, netbanking via Razorpay</small></li>
               <li><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17" r="1.6" /><circle cx="17" cy="17" r="1.6" /></svg><b>{Number(settings.free_shipping_min) > 0 ? `Free shipping ${inr(settings.free_shipping_min)}+` : "Fast delivery"}</b><small>Arrives in {settings.delivery_days}</small></li>
-              <li><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5" /></svg><b>{settings.exchange_days}-day exchange</b><small>Wrong size? We'll swap it</small></li>
+              <li><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5" /></svg><b>{settings.return_days}-day returns</b><small>Plus {settings.exchange_days}-day size exchange</small></li>
               {cfg.codEnabled && <li><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1" /><circle cx="12" cy="12" r="2.5" /></svg><b>Cash on delivery</b><small>Pay just {cfg.codPct}% now</small></li>}
             </ul>
             <div className="acc">
@@ -59,6 +59,8 @@ export default async function ProductPage({ params }) {
           </div>
         </div>
         {p.long_description && <section className="story"><span className="story-k" aria-hidden="true">物語</span><div className="story-in"><p className="eyebrow">The story</p><Prose text={p.long_description} /></div></section>}
+        {p.extra_images?.length > 0 && <section className="look" aria-label="More photos"><p className="eyebrow">Look closer</p><div className="look-grid">{p.extra_images.map((src, i) => <figure key={i}><img src={src} alt={`${p.name}, detail ${i + 1}`} loading="lazy" decoding="async" /></figure>)}</div></section>}
+        <RecentlyViewed slug={p.slug} />
         {related.length > 0 && <section className="related"><div className="sec-head"><div><p className="eyebrow">Recommended</p><h2 className="h2">You may <em>also like</em></h2></div></div><ProductGrid products={related} colors={colors} collapse={false} /></section>}
       </div>
     </div>

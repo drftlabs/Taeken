@@ -287,3 +287,6 @@ revoke all on function public.use_discount(text) from public, anon, authenticate
 
 -- welcome code to try out (delete or edit in Admin -> Discount codes)
 insert into public.discounts (code, type, value, min_order) values ('WELCOME10','percent',10,0) on conflict (code) do nothing;
+
+-- migration 3
+alter table public.products add column if not exists extra_images text[] not null default '{}';

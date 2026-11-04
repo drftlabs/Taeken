@@ -28,14 +28,17 @@ export async function POST(req) {
   if (method === "online" && (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET)) return NextResponse.json({ error: "Online payments are not configured yet." }, { status: 503 });
 
   const ids = [...new Set(req_items.map((i) => i.id))];
-  const { data: prods } = await sb.from("products").select("id,name,price,images,sizes,active").in("id", ids);
+  const { data: prods } = await sb.from("products").select("id,name,price,images,sizes,active,colors").in("id", ids);
   const byId = Object.fromEntries((prods || []).map((p) => [p.id, p]));
+  const { data: cl } = await sb.from("colors").select("slug,name");
+  const cname = Object.fromEntries((cl || []).map((c) => [c.slug, c.name]));
   const items = [];
   for (const it of req_items) {
     const p = byId[it.id]; const qty = Math.max(1, Math.min(10, parseInt(it.qty) || 1)); const size = String(it.size);
     if (!p || !p.active) return NextResponse.json({ error: "An item in your bag is no longer available." }, { status: 409 });
     if ((Number(p.sizes?.[size]) || 0) < qty) return NextResponse.json({ error: `${p.name} (UK ${size}) is out of stock or has fewer pairs left than you asked for.` }, { status: 409 });
-    items.push({ id: p.id, name: p.name, size, qty, price: p.price, image: p.images?.[0] || "" });
+    const col = p.colors?.includes(it.color) ? it.color : p.colors?.[0] || "";
+    items.push({ id: p.id, name: p.name, size, qty, price: p.price, image: p.images?.[0] || "", color: cname[col] || col });
   }
   const subtotal = items.reduce((t, i) => t + i.price * i.qty, 0);
 

@@ -183,3 +183,41 @@
 @media(max-width:520px){.pay-opt{grid-template-columns:22px 1fr}.pay-opt .pa{grid-column:2;text-align:left}}
 .buynow,.buynow.ghost{background:var(--red);color:#fff;box-shadow:none;margin-top:12px;padding:18px 26px}
 .buynow:hover,.buynow.ghost:hover{background:var(--chalk);color:var(--obsidian)}
+
+/* ===== round 3: product page ===== */
+/* photo floats directly on the site background: no box, no fill */
+.gal-main{background:none!important;border:0!important;overflow:hidden}
+.gal-main:before{display:none}
+.gal-kanji{left:50%;top:50%;transform:translate(-50%,-52%);font-size:clamp(200px,28vw,420px);color:rgba(245,243,238,.05)}
+.gal-track{display:flex;height:100%;will-change:transform;position:relative;z-index:1}
+.gal-slide{flex:0 0 100%;position:relative;height:100%}
+.gal-slide .gal-zoom{position:absolute;inset:0}
+.gal-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5%;filter:drop-shadow(0 30px 24px rgba(0,0,0,.5))}
+.gal-zbtn{position:absolute;right:8px;top:8px;z-index:3;display:flex;align-items:center;gap:6px;padding:8px 11px;background:rgba(10,10,11,.6);border:1px solid #55555a;font:800 10px var(--body);letter-spacing:.16em;text-transform:uppercase;backdrop-filter:blur(6px)}
+.gal-zbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+.gal-zbtn:hover{background:var(--chalk);color:var(--obsidian)}
+@media(hover:hover){.gal-zoom:hover img{transform:scale(1.9)}}
+.lb{display:flex;flex-direction:column;cursor:default}
+.lb-top{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;flex:none}
+.lb-top .lb-c{position:static}.lb-top div{display:flex;gap:8px}.lb-top button{width:46px;height:46px;border:1px solid #55555a;font-size:26px;color:#fff;line-height:1}.lb-top button:disabled{opacity:.3}
+.lb-scroll{flex:1;min-height:0;overflow:auto;display:grid;place-items:center;touch-action:pan-x pan-y pinch-zoom;-webkit-overflow-scrolling:touch}
+.lb-scroll img{max-width:94vw;max-height:calc(100svh - 150px);width:auto;height:auto;object-fit:contain;cursor:zoom-in;margin:auto;transition:none}
+.lb-scroll.z{place-items:start}.lb-scroll.z img{max-width:none;max-height:none;width:min(240vw,2200px);cursor:zoom-out}
+.lb-h{flex:none;text-align:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--concrete);padding:10px}
+.lb-n{z-index:3}
+.lb img{filter:none}
+@media(max-width:860px){.gal-zbtn span{display:none}.gal-zbtn{padding:10px}}
+/* colour swatches (selectable) */
+.pdp-sw{display:flex;gap:10px;flex-wrap:wrap}.pdp-sw button{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #55555a;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;transition:.25s}
+.pdp-sw button:hover{border-color:var(--chalk)}.pdp-sw button.on{border-color:var(--chalk);background:var(--chalk);color:var(--obsidian)}
+.pdp-sw button i{width:16px;height:16px;border-radius:50%;border:1px solid #6a6a6e;display:block}
+.pdp-sw button.on i{border-color:var(--obsidian);box-shadow:0 0 0 2px var(--chalk),0 0 0 3px var(--obsidian)}
+.paychips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.paychips span{font:800 9px var(--body);letter-spacing:.14em;text-transform:uppercase;border:1px solid #4a4a4e;padding:5px 8px;color:#cfcdc7}.paychips .cod{border-color:var(--sand);color:var(--sand)}
+.pin-eta{font-size:13px;margin-top:6px;color:#cfcdc7}.pin-eta b{color:var(--chalk)}
+/* extra photos: any dimension */
+.look{margin:clamp(50px,7vw,100px) 0 0}
+.look-grid{columns:2;column-gap:14px}.look-grid figure{break-inside:avoid;margin:0 0 14px;background:var(--bg2);border:1px solid var(--line)}.look-grid img{width:100%;height:auto;display:block}
+@media(max-width:700px){.look-grid{columns:1}}
+.prose .fig-row{display:grid;grid-template-columns:repeat(var(--n,2),1fr);gap:12px;margin:26px 0}.prose .fig-row figure{margin:0}
+@media(max-width:600px){.prose .fig-row{grid-template-columns:1fr 1fr}.prose .fig-row[style*="--n: 3"]{grid-template-columns:1fr}}
+.recent{margin-top:clamp(50px,7vw,100px)}

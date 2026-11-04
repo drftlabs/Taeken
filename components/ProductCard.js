@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useShop } from "./ShopProvider";
-import { inr } from "@/lib/format";
+import { inr, kanjiFor } from "@/lib/format";
 import { Arrow } from "./Media";
 
 export const sizeList = (p) => Object.keys(p.sizes || {}).sort((a, b) => a - b);
@@ -12,6 +12,8 @@ export default function ProductCard({ p, colorMap = {}, extra = false, inert = f
   const { add, wish, toggleWish } = useShop();
   const [sizing, setSizing] = useState(false);
   const [added, setAdded] = useState(false);
+  const opts = (p.colors || []).map((c) => ({ slug: c, name: colorMap[c]?.name || c, hex: colorMap[c]?.hex || "#777" }));
+  const [ci, setCi] = useState(0), color = opts[ci] || null;
   const ref = useRef();
   const sold = totalStock(p) === 0;
   useEffect(() => {
@@ -23,8 +25,8 @@ export default function ProductCard({ p, colorMap = {}, extra = false, inert = f
   }, [sizing]);
   const saved = wish.includes(p.id);
   return (
-    <article ref={ref} className={"card" + (extra ? " extra" : "")} style={{ "--i": index }} inert={inert ? "" : undefined}>
-      <div className="p-visual" data-k={["街", "闘", "走", "速", "型", "魂"][index % 6]} data-n={String(index + 1).padStart(2, "0")}>
+    <article ref={ref} className={"card" + (extra ? " extra" : "") + (sizing ? " sizing" : "")} style={{ "--i": index }} inert={inert ? "" : undefined}>
+      <div className="p-visual" data-k={kanjiFor(p.slug)} data-n={String(index + 1).padStart(2, "0")}>
         <Link className={"p-img" + (p.images?.[0] ? " has-img" : "")} href={`/products/${p.slug}`} aria-label={`${p.name}, ${inr(p.price)}`}>
           {p.images?.[0] ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" /> : <span className="corners" />}
         </Link>
@@ -34,9 +36,10 @@ export default function ProductCard({ p, colorMap = {}, extra = false, inert = f
         </button>
         <div className="sizes" role="group" aria-label={`Choose a UK size for ${p.name}`}>
           <p><span>Select UK size</span><button aria-label="Close sizes" onClick={() => setSizing(false)}>×</button></p>
+          {opts.length > 0 && <div className="cl" role="radiogroup" aria-label="Colour"><span>Colour: <b>{color?.name}</b></span><div>{opts.map((o, k) => <button key={o.slug} role="radio" aria-checked={k === ci} aria-label={o.name} title={o.name} className={k === ci ? "on" : ""} onClick={() => setCi(k)}><i style={{ background: o.hex }} /></button>)}</div></div>}
           <div className="sz">
             {sizeList(p).map((s) => Number(p.sizes[s]) > 0
-              ? <button key={s} aria-label={`UK ${s}`} onClick={() => { add(p, s); setSizing(false); setAdded(true); setTimeout(() => setAdded(false), 1200); }}>{s}</button>
+              ? <button key={s} aria-label={`UK ${s}`} onClick={() => { add(p, s, 1, false, color, ref.current?.querySelector(".p-img img, .p-img")); setSizing(false); setAdded(true); setTimeout(() => setAdded(false), 1200); }}>{s}</button>
               : <button key={s} disabled aria-label={`UK ${s}, sold out`}>{s}</button>)}
           </div>
         </div>

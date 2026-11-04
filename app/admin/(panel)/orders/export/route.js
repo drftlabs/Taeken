@@ -15,7 +15,7 @@ export async function GET(req) {
   const rows = (data || []).map((o) => ({
     order_number: o.order_number, date: o.created_at, status: o.status, name: o.name, email: o.email, phone: o.phone,
     address: [o.shipping_address?.line1, o.shipping_address?.line2, o.shipping_address?.area].filter(Boolean).join(", "), city: o.shipping_address?.city, state: o.shipping_address?.state, pin: o.shipping_address?.pin,
-    items: (o.items || []).map((i) => `${i.name} UK${i.size} x${i.qty}`).join(" | "), quantity: (o.items || []).reduce((t, i) => t + i.qty, 0),
+    items: (o.items || []).map((i) => `${i.name}${i.color ? " (" + i.color + ")" : ""} UK${i.size} x${i.qty}`).join(" | "), quantity: (o.items || []).reduce((t, i) => t + i.qty, 0),
     subtotal: o.subtotal, discount: o.discount || 0, discount_code: o.discount_code || "", shipping: o.shipping, total: o.total,
     payment_method: (o.payment_method || "online").toUpperCase(), paid_online: o.amount_paid || 0, cod_to_collect: o.amount_due || 0, payment_id: o.razorpay_payment_id,
     courier: o.courier || "", tracking_number: o.tracking_number || "", tracking_url: o.tracking_url || "",
