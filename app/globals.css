@@ -81,7 +81,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ph{position:absolute;inset:0;overflow:hidden}
 .ph:before{content:"";position:absolute;inset:-25%;background:repeating-linear-gradient(112deg,transparent 0 26px,var(--ph-line,rgba(245,243,238,.05)) 26px 28px)}
 .ph:after{content:"";position:absolute;left:-10%;bottom:14%;width:70%;height:2px;background:var(--red);transform:rotate(-12deg);opacity:.8}
-.ghost{position:absolute;right:6%;top:50%;transform:translateY(-50%);font:900 min(62vh,34vw)/1 var(--jp);color:var(--ph-ghost,rgba(245,243,238,.05));user-select:none}
+.ghost:not(.btn):not(.abtn){position:absolute;right:6%;top:50%;transform:translateY(-50%);font:900 min(62vh,34vw)/1 var(--jp);color:var(--ph-ghost,rgba(245,243,238,.05));user-select:none}
 .idtag{position:absolute;left:14px;bottom:14px;font-size:9px;font-weight:800;letter-spacing:.24em;color:var(--ph-tag,#6c6c70)}
 
 /* ============ 4. HERO SLIDER ============ */
@@ -208,7 +208,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .tile:nth-child(odd) .t-img{aspect-ratio:4/5}.tile:nth-child(even) .t-img{aspect-ratio:1/1}
 .tile:hover .t-img img{transform:scale(1.045)}
 .t-img .vert{right:10px;top:10px;font-size:22px;color:var(--obsidian);opacity:.7;z-index:3}
-.t-img .ghost{font-size:min(30vw,180px);right:auto;left:50%;transform:translate(-50%,-50%)}
+.t-img .ghost:not(.btn):not(.abtn){font-size:min(30vw,180px);right:auto;left:50%;transform:translate(-50%,-50%)}
 .t-meta{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:16px;border-top:3px solid var(--obsidian);margin-top:14px}
 .t-meta .no{display:block;font-size:11px;font-weight:800;letter-spacing:.22em;color:#6a6a6a;margin-bottom:6px}
 .t-meta h3{font-family:var(--display);font-weight:400;font-size:clamp(26px,3.1vw,46px);line-height:.92;text-transform:uppercase;transform:skewX(-6deg);transform-origin:left bottom}
@@ -300,3 +300,42 @@ footer{border-top:1px solid var(--line);padding:clamp(56px,7vw,100px) var(--pad)
 .banner .btn.ghost{background:var(--chalk);color:var(--obsidian);box-shadow:0 8px 24px rgba(0,0,0,.45)}.banner .btn.ghost:hover{background:var(--red);color:#fff}
 .banner .btn{position:relative;z-index:7}
 @media(max-width:600px){.banner .btn{width:100%;justify-content:space-between}.b-right,.b-left{width:100%}.banner.next .b-in{gap:18px}}
+
+/* ================= v2 brand pass: more street / Japan ================= */
+/* slanted tape marquee between sections */
+.tapewrap{overflow:hidden;position:relative;z-index:6;padding:26px 0;margin:-26px 0;pointer-events:none}
+.tapeband{position:relative;z-index:6;background:var(--red);color:#fff;overflow:hidden;transform:rotate(-1.4deg);margin:-14px -2vw;padding:12px 0;border-block:3px solid var(--obsidian);box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.tapeband.light{background:var(--chalk);color:var(--obsidian)}
+.tb-in{display:flex;width:max-content;animation:tbmove 38s linear infinite}.tb-in>span{display:flex;flex:none}
+.tapeband b{display:flex;align-items:center;font:400 22px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
+.tapeband b i{width:9px;height:18px;background:currentColor;transform:skewX(-24deg);margin:0 28px;opacity:.9}
+@keyframes tbmove{to{transform:translateX(-50%)}}
+/* vertical side rail */
+.rail{position:fixed;left:6px;top:0;bottom:0;width:26px;z-index:40;pointer-events:none;display:none;align-items:center;justify-content:center}
+.rail span{writing-mode:vertical-rl;transform:rotate(180deg);font:800 10px var(--body);letter-spacing:.42em;color:var(--concrete);opacity:.5;white-space:nowrap}
+@media(min-width:1280px){.rail{display:flex}}
+/* product card: kanji watermark + plate number + red slash */
+.p-visual:before{content:attr(data-k);position:absolute;right:-4%;bottom:-8%;font:900 clamp(120px,15vw,200px)/1 var(--jp);color:rgba(245,243,238,.045);pointer-events:none;transition:transform .5s var(--ease),color .3s}
+.card:hover .p-visual:before{transform:translate(-8px,-6px);color:rgba(215,38,43,.14)}
+.p-visual:after{content:"No." attr(data-n);position:absolute;left:10px;bottom:8px;font:800 9px var(--body);letter-spacing:.22em;color:var(--concrete);opacity:.7;pointer-events:none}
+.p-img img{filter:drop-shadow(0 16px 14px rgba(0,0,0,.5))}
+.card .p-name span{background-image:linear-gradient(var(--red),var(--red))}
+/* buttons: slash sweep */
+.btn{position:relative;overflow:hidden;isolation:isolate}
+.btn:after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:28%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-24deg);transition:left .6s var(--ease);z-index:-1;pointer-events:none}
+.btn:hover:after{left:130%}
+/* footer extras */
+.f-kana{display:flex;align-items:center;justify-content:center;gap:clamp(14px,3vw,36px);margin-top:30px;font:900 clamp(18px,2.6vw,30px) var(--jp);letter-spacing:.3em;color:var(--chalk);opacity:.75}
+.f-kana i{width:7px;height:20px;background:var(--red);transform:skewX(-24deg)}
+footer>.checker{height:12px;margin-bottom:0}
+/* loading */
+.ldg{min-height:70vh;display:grid;place-content:center;justify-items:center;gap:20px;text-align:center}
+.ldg img{animation:ldp 1s ease-in-out infinite alternate}@keyframes ldp{from{opacity:.55;transform:skewX(0)}to{opacity:1;transform:skewX(-6deg)}}
+.ldg-bar{width:180px;height:4px;background:#2c2c2f;overflow:hidden;transform:skewX(-24deg)}.ldg-bar i{display:block;width:40%;height:100%;background:var(--red);animation:ldb 1s var(--ease) infinite}
+@keyframes ldb{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+.ldg p{font:800 11px var(--body);letter-spacing:.3em;text-transform:uppercase;color:var(--concrete)}.ldg p span{opacity:.6}
+/* WhatsApp */
+.wa{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:80;width:52px;height:52px;background:#25d366;color:#fff;display:grid;place-items:center;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));box-shadow:0 10px 24px rgba(0,0,0,.4)}
+.wa svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2}
+@media(max-width:860px){.wa{bottom:calc(86px + env(safe-area-inset-bottom,0px))}}
+@media(prefers-reduced-motion:reduce){.tb-in,.ldg img,.ldg-bar i{animation:none}}

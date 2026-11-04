@@ -16,6 +16,11 @@ const G = [
     { name: "free_shipping_min", label: "Free shipping above (₹)", type: "number" }, { name: "shipping_fee", label: "Flat shipping fee (₹)", type: "number" },
     { name: "dispatch_days", label: "Dispatch time (text)", type: "text" }, { name: "delivery_days", label: "Delivery time (text)", type: "text" },
     { name: "return_days", label: "Return window (days)", type: "number" }, { name: "exchange_days", label: "Exchange window (days)", type: "number" }, { name: "refund_days", label: "Refund processing (business days)", type: "number" }]],
+  ["Cash on delivery & contact", [
+    { name: "cod_enabled", label: "Offer cash on delivery (COD)", type: "checkbox" },
+    { name: "cod_prepaid_pct", label: "COD: % paid online upfront", type: "number", help: "10 = customer pays 10% via Razorpay, the rest in cash. 0 = fully cash." },
+    { name: "cod_fee", label: "COD delivery fee (₹)", type: "number", help: "Added to every COD order and shown at checkout." },
+    { name: "whatsapp", label: "WhatsApp number (with country code)", type: "text", help: "e.g. 919876543210. Shows a chat button on the site. Blank = hidden." }]],
   ["Catalogue", [{ name: "sizes", label: "UK sizes offered (comma separated)", type: "text", help: "e.g. 6,7,8,9,10,11. Used in the product form." }]],
 ];
 

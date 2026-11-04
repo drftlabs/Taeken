@@ -5,6 +5,7 @@ export default function Footer({ settings, collections }) {
   const ig = settings.instagram;
   return (
     <footer id="footer">
+      <div className="checker" aria-hidden="true" />
       <div className="f-top">
         <div className="f-brand">
           <Link className="logo" href="/" aria-label="Taeken, back to top"><img src="/logo.png" alt="Taeken" width="76" height="46" /></Link>
@@ -19,6 +20,7 @@ export default function Footer({ settings, collections }) {
         </div>
       </div>
       <div className="f-bot"><span>© {new Date().getFullYear()} {settings.business_name}. Make your mark.</span><span>India · INR ₹ · Payments by Razorpay</span></div>
+      <div className="f-kana" aria-hidden="true"><span>テイケン</span><i /><span>街</span><i /><span>闘</span><i /><span>走</span></div>
       <div className="f-big" aria-hidden="true">Make your mark</div>
     </footer>
   );

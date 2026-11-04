@@ -5,8 +5,8 @@ import { browserClient } from "@/lib/supabase/client";
 
 const NAV = [
   ["Overview", [["/admin", "Dashboard"]]],
-  ["Sales", [["/admin/orders", "Orders"], ["/admin/messages", "Messages & complaints"]]],
-  ["Catalogue", [["/admin/products", "Products"], ["/admin/collections", "Collections"], ["/admin/tags", "Tags"], ["/admin/colors", "Colours"]]],
+  ["Sales", [["/admin/orders", "Orders"], ["/admin/discounts", "Discount codes"], ["/admin/messages", "Messages & complaints"]]],
+  ["Catalogue", [["/admin/products", "Products"], ["/admin/inventory", "Inventory"], ["/admin/collections", "Collections"], ["/admin/tags", "Tags"], ["/admin/colors", "Colours"]]],
   ["Homepage", [["/admin/blocks", "Block placement"], ["/admin/slides", "Hero slides"]]],
   ["Site", [["/admin/pages", "Legal pages"], ["/admin/settings", "Settings"]]],
 ];

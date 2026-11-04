@@ -2,7 +2,22 @@
 import { useRef, useState } from "react";
 import { browserClient } from "@/lib/supabase/client";
 
-export async function uploadImage(file, folder = "misc") {
+// Shrinks big photos in the browser (max 1600px, WebP keeps transparency) so pages load fast. SVG/GIF are uploaded as-is.
+async function shrink(file) {
+  if (!/^image\/(png|jpeg|webp)$/.test(file.type)) return file;
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    if (scale === 1 && file.size < 350 * 1024) return file;
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise((r) => c.toBlob(r, "image/webp", 0.88));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, "") + ".webp", { type: "image/webp" });
+  } catch { return file; }
+}
+export async function uploadImage(orig, folder = "misc") {
+  const file = await shrink(orig);
   const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
   const { error } = await browserClient().storage.from("media").upload(path, file, { cacheControl: "31536000", upsert: false, contentType: file.type });

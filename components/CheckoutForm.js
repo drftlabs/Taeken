@@ -1,43 +1,81 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useShop } from "./ShopProvider";
 import { inr, STATES } from "@/lib/format";
+import { priceOrder } from "@/lib/pricing";
+import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
 
 function loadRzp() {
   return new Promise((res, rej) => {
     if (window.Razorpay) return res();
-    const s = document.createElement("script"); s.src = "https://checkout.razorpay.com/v1/checkout.js"; s.onload = res; s.onerror = () => rej(new Error("Could not load payment window")); document.body.appendChild(s);
+    const s = document.createElement("script"); s.src = "https://checkout.razorpay.com/v1/checkout.js"; s.onload = res; s.onerror = () => rej(new Error("Could not load the payment window. Check your connection.")); document.body.appendChild(s);
   });
 }
+const EMPTY = { name: "", email: "", phone: "", pin: "", area: "", line1: "", line2: "", city: "", state: "" };
 
-export default function CheckoutForm() {
-  const { items, subtotal, ship, total, shipping, clear, email: loginEmail, ready } = useShop();
+export default function CheckoutForm({ modal = false, onClose }) {
+  const { items, subtotal, shipping: cfg, clear, email: loginEmail, ready } = useShop();
   const router = useRouter();
-  const [f, setF] = useState({ name: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pin: "" });
+  const [f, setF] = useState(EMPTY), [areas, setAreas] = useState([]), [pinMsg, setPinMsg] = useState("");
+  const [method, setMethod] = useState("online"), [code, setCode] = useState(""), [rule, setRule] = useState(null), [codeMsg, setCodeMsg] = useState(null);
   const [busy, setBusy] = useState(false), [err, setErr] = useState("");
-  useEffect(() => { if (loginEmail && !f.email) setF((x) => ({ ...x, email: loginEmail })); }, [loginEmail]); // eslint-disable-line
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const lastPin = useRef("");
 
-  if (ready && !items.length) return <div className="center"><h1 className="page-title">Your bag is <em>empty</em></h1><p className="lead">Pick a pair first.</p><Link className="btn" href="/collections/all">Shop the collection <Arrow /></Link></div>;
+  // remember details on this device so the next order is one tap
+  useEffect(() => { try { const s = JSON.parse(localStorage.getItem("tk_co") || "null"); if (s) { setF((x) => ({ ...x, ...s })); lastPin.current = s.pin || ""; } } catch {} }, []);
+  useEffect(() => { try { localStorage.setItem("tk_co", JSON.stringify(f)); } catch {} }, [f]);
+  useEffect(() => { if (loginEmail && !f.email) setF((x) => ({ ...x, email: loginEmail })); }, [loginEmail]); // eslint-disable-line
+  const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
+
+  // pin code -> city, state, area (autofill; always editable)
+  useEffect(() => {
+    if (f.pin.length !== 6 || f.pin === lastPin.current) { if (f.pin.length < 6) { setPinMsg(""); setAreas([]); } return; }
+    lastPin.current = f.pin; setPinMsg("Looking up pin code…");
+    lookupPin(f.pin).then((r) => {
+      if (!r) { setPinMsg("Couldn't auto-fill this pin code. Please enter city and state."); setAreas([]); return; }
+      setAreas(r.areas); setPinMsg(`✓ ${r.city}${r.state ? ", " + r.state : ""}`);
+      setF((x) => ({ ...x, city: r.city || x.city, state: r.state || x.state, area: r.areas.includes(x.area) ? x.area : r.areas[0] || "" }));
+    });
+  }, [f.pin]);
+  useEffect(() => { if (f.pin.length === 6 && areas.length === 0) lookupPin(f.pin).then((r) => r && setAreas(r.areas)); }, []); // eslint-disable-line
+
+  const contactOk = f.name.trim().length > 1 && /^\S+@\S+\.\S+$/.test(f.email) && f.phone.replace(/\D/g, "").length >= 10;
+  const addrOk = /^\d{6}$/.test(f.pin) && f.line1.trim().length > 3 && f.city.trim() && f.state;
+  const price = useMemo(() => priceOrder({ subtotal, method, cfg, discount: rule }), [subtotal, method, cfg, rule]);
+  const alt = useMemo(() => priceOrder({ subtotal, method: method === "cod" ? "online" : "cod", cfg, discount: rule }), [subtotal, method, cfg, rule]);
+  const online = method === "cod" ? alt : price, cod = method === "cod" ? price : alt;
+
+  async function applyCode() {
+    setCodeMsg(null); if (!code.trim()) return;
+    const r = await fetch("/api/checkout/discount", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, subtotal }) }).then((x) => x.json()).catch(() => ({ ok: false, error: "Couldn't check the code. Try again." }));
+    if (r.ok) { setRule(r.rule); setCodeMsg({ ok: true, t: `${r.rule.code} applied` }); } else { setRule(null); setCodeMsg({ ok: false, t: r.error }); }
+  }
+
+  if (ready && !items.length) return <div className="center"><h1 className="page-title">Your bag is <em>empty</em></h1><p className="lead">Pick a pair first.</p><Link className="btn" href="/collections/all" onClick={onClose}>Shop the collection <Arrow /></Link></div>;
 
   async function pay(e) {
-    e.preventDefault(); setErr(""); setBusy(true);
+    e.preventDefault(); setErr("");
+    if (!contactOk) return setErr("Please check your name, email and 10-digit phone number.");
+    if (!addrOk) return setErr("Please complete your delivery address.");
+    setBusy(true);
+    const done = (num, due) => { clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}`); };
     try {
-      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty })), customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, city: f.city, state: f.state, pin: f.pin } }) });
+      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
       const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not start payment");
+      if (d.cod) return done(d.orderNumber, d.due);
       await loadRzp();
       const rz = new window.Razorpay({
-        key: d.key, amount: d.amount, currency: "INR", name: "Taeken", description: `Order ${d.orderNumber}`, order_id: d.rzpOrderId,
+        key: d.key, amount: d.amount, currency: "INR", name: "Taeken", description: d.method === "cod" ? `Order ${d.orderNumber}: 10% advance (COD)` : `Order ${d.orderNumber}`, order_id: d.rzpOrderId,
         prefill: { name: d.prefill.name, email: d.prefill.email, contact: d.prefill.phone }, theme: { color: "#D7262B" },
         modal: { ondismiss: () => { setBusy(false); setErr("Payment was not completed. Your bag is saved, so you can try again."); } },
         handler: async (resp) => {
           const v = await fetch("/api/checkout/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order_id: d.orderId, ...resp }) });
           const vd = await v.json();
           if (!v.ok) { setBusy(false); setErr((vd.error || "Verification failed") + " If money was deducted, it will be confirmed automatically or refunded. Contact us with order " + d.orderNumber + "."); return; }
-          clear(); router.push(`/checkout/success?o=${encodeURIComponent(vd.orderNumber)}`);
+          done(vd.orderNumber, d.due);
         },
       });
       rz.on("payment.failed", (x) => { setBusy(false); setErr(x.error?.description || "Payment failed. Please try again."); });
@@ -46,41 +84,79 @@ export default function CheckoutForm() {
   }
 
   return (
-    <form className="co" onSubmit={pay}>
-      <div>
-        <h2>Contact</h2>
-        <div className="form" style={{ maxWidth: "none" }}>
+    <form className={"co2" + (modal ? " in-modal" : "")} onSubmit={pay} noValidate>
+      <section className="co-step">
+        <h2><i>01</i>Contact</h2>
+        <div className="form">
           <div className="field"><label htmlFor="name">Full name</label><input id="name" required autoComplete="name" value={f.name} onChange={set("name")} /></div>
           <div className="row">
-            <div className="field"><label htmlFor="email">Email</label><input id="email" type="email" required autoComplete="email" value={f.email} onChange={set("email")} /><p className="hint">Your order updates and account login use this email.</p></div>
-            <div className="field"><label htmlFor="phone">Phone</label><input id="phone" type="tel" required inputMode="tel" autoComplete="tel" pattern="[0-9+ ]{10,15}" value={f.phone} onChange={set("phone")} /></div>
+            <div className="field"><label htmlFor="email">Email</label><input id="email" type="email" required autoComplete="email" inputMode="email" value={f.email} onChange={set("email")} /></div>
+            <div className="field"><label htmlFor="phone">Phone</label><input id="phone" type="tel" required inputMode="tel" autoComplete="tel" value={f.phone} onChange={set("phone")} /></div>
           </div>
+          <p className="hint">Order updates and your account login use this email.</p>
         </div>
-        <h2>Delivery address</h2>
-        <div className="form" style={{ maxWidth: "none" }}>
-          <div className="field"><label htmlFor="l1">Address</label><input id="l1" required autoComplete="address-line1" value={f.line1} onChange={set("line1")} /></div>
-          <div className="field"><label htmlFor="l2">Apartment, landmark (optional)</label><input id="l2" autoComplete="address-line2" value={f.line2} onChange={set("line2")} /></div>
+      </section>
+
+      <section className="co-step">
+        <h2><i>02</i>Delivery address</h2>
+        <div className="form">
+          <div className="row">
+            <div className="field"><label htmlFor="pin">Pin code</label><input id="pin" required inputMode="numeric" autoComplete="postal-code" maxLength={6} placeholder="6 digits" value={f.pin} onChange={(e) => setF((x) => ({ ...x, pin: e.target.value.replace(/\D/g, "").slice(0, 6) }))} />{pinMsg && <p className={"hint" + (pinMsg.startsWith("✓") ? " ok" : "")}>{pinMsg}</p>}</div>
+            <div className="field"><label htmlFor="area">Area / locality</label>{areas.length > 1 ? <select id="area" value={f.area} onChange={set("area")}>{areas.map((a) => <option key={a}>{a}</option>)}</select> : <input id="area" autoComplete="address-level3" value={f.area} onChange={set("area")} />}</div>
+          </div>
+          <div className="field"><label htmlFor="l1">House no., building, street</label><input id="l1" required autoComplete="address-line1" value={f.line1} onChange={set("line1")} /></div>
+          <div className="field"><label htmlFor="l2">Landmark (optional)</label><input id="l2" autoComplete="address-line2" value={f.line2} onChange={set("line2")} /></div>
           <div className="row">
             <div className="field"><label htmlFor="city">City</label><input id="city" required autoComplete="address-level2" value={f.city} onChange={set("city")} /></div>
-            <div className="field"><label htmlFor="pin">Pin code</label><input id="pin" required inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="postal-code" value={f.pin} onChange={set("pin")} /></div>
+            <div className="field"><label htmlFor="state">State</label><select id="state" required autoComplete="address-level1" value={f.state} onChange={set("state")}><option value="">Select state</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></div>
           </div>
-          <div className="field"><label htmlFor="state">State</label><select id="state" required value={f.state} onChange={set("state")}><option value="">Select state</option>{STATES.map((s) => <option key={s}>{s}</option>)}</select></div>
         </div>
-      </div>
-      <aside className="sum" aria-label="Order summary">
-        <h2 style={{ margin: "0 0 8px" }}>Order summary</h2>
-        {items.map((i) => (
-          <div className="li" key={i.id + i.size}><div className="thumb">{i.image && <img src={i.image} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size} × {i.qty}</small></div><div className="pr">{inr(i.price * i.qty)}</div></div>
-        ))}
-        <div className="line" style={{ marginTop: 10 }}><span>Subtotal</span><span>{inr(subtotal)}</span></div>
-        <div className="line"><span>Shipping</span><span>{ship ? inr(ship) : "Free"}</span></div>
-        {ship > 0 && <div className="line" style={{ fontSize: 12 }}><span>Add {inr(shipping.min - subtotal)} more for free shipping</span><span /></div>}
-        <div className="line tot"><span>Total</span><span>{inr(total)}</span></div>
-        {err && <p className="msg-err" style={{ marginTop: 14 }} role="alert">{err}</p>}
-        <button className="btn" type="submit" disabled={busy}>{busy ? "Opening payment…" : <>Pay {inr(total)} <Arrow /></>}</button>
-        <p className="secure">Secure payment by Razorpay · UPI, cards, netbanking, wallets</p>
-        <p className="secure" style={{ marginTop: 6 }}>By paying you agree to our <Link className="link" href="/policies/terms" style={{ fontSize: 12 }}>Terms</Link> and <Link className="link" href="/policies/returns" style={{ fontSize: 12 }}>Return Policy</Link>.</p>
-      </aside>
+      </section>
+
+      {!addrOk ? <p className="co-wait"><span aria-hidden="true">⬆</span> Fill in your pin code and address to see your order summary and payment options.</p> : (
+        <>
+          <section className="co-step reveal">
+            <h2><i>03</i>Order summary</h2>
+            <div className="co-sum">
+              {items.map((i) => <div className="li" key={i.id + i.size}><div className="thumb">{i.image && <img src={i.image} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size} × {i.qty}</small></div><div className="pr">{inr(i.price * i.qty)}</div></div>)}
+              <div className="code-row">{rule ? <div className="code-ok"><b>{rule.code}</b> applied <button type="button" onClick={() => { setRule(null); setCode(""); setCodeMsg(null); }}>Remove</button></div> : <><input aria-label="Discount code" placeholder="Discount code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyCode())} /><button type="button" onClick={applyCode}>Apply</button></>}</div>
+              {codeMsg && <p className={"hint" + (codeMsg.ok ? " ok" : " bad")}>{codeMsg.t}</p>}
+              <div className="line"><span>Subtotal</span><span>{inr(price.subtotal)}</span></div>
+              {price.discount > 0 && <div className="line save"><span>Discount</span><span>−{inr(price.discount)}</span></div>}
+              <div className="line"><span>{method === "cod" ? "COD delivery fee" : "Shipping"}</span><span>{price.shipping ? inr(price.shipping) : "Free"}</span></div>
+              <div className="line tot"><span>Total</span><span>{inr(price.total)}</span></div>
+              {method === "cod" && <div className="line split"><span>Pay now (advance)</span><span>{inr(price.payNow)}</span></div>}
+              {method === "cod" && <div className="line split"><span>Pay in cash on delivery</span><span>{inr(price.due)}</span></div>}
+            </div>
+          </section>
+
+          <section className="co-step reveal">
+            <h2><i>04</i>Payment</h2>
+            <div className="pay-opts" role="radiogroup" aria-label="Payment method">
+              <label className={"pay-opt" + (method === "online" ? " on" : "")}>
+                <input type="radio" name="m" checked={method === "online"} onChange={() => setMethod("online")} />
+                <span className="dot" />
+                <span className="pt"><b>Pay online</b><small>UPI · Cards · Netbanking · Wallets · EMI. Opens the secure Razorpay window.</small></span>
+                <span className="pa">{inr(online.total)}{online.shipping === 0 && <em>Free shipping</em>}</span>
+              </label>
+              {cfg.codEnabled && (
+                <label className={"pay-opt" + (method === "cod" ? " on" : "")}>
+                  <input type="radio" name="m" checked={method === "cod"} onChange={() => setMethod("cod")} />
+                  <span className="dot" />
+                  <span className="pt"><b>Cash on delivery</b><small>Pay <b>{cfg.codPct}%</b> now ({inr(cod.payNow)}) to confirm your order, and the rest ({inr(cod.due)}) in cash when it arrives. A <b>{inr(cfg.codFee)} COD delivery fee</b> is added.</small></span>
+                  <span className="pa">{inr(cod.total)}<em>+{inr(cfg.codFee)} COD fee</em></span>
+                </label>
+              )}
+            </div>
+          </section>
+
+          {err && <p className="msg-err" role="alert">{err}</p>}
+          <button className="btn co-pay" type="submit" disabled={busy}>{busy ? "Opening payment…" : method === "cod" ? (price.payNow ? <>Pay {inr(price.payNow)} now &amp; confirm COD <Arrow /></> : <>Place COD order <Arrow /></>) : <>Pay {inr(price.total)} <Arrow /></>}</button>
+          <div className="secure-row"><span>🔒 Secure payment by Razorpay</span><span>↺ Easy size exchange</span><span>✓ Your card details never touch our server</span></div>
+          <p className="secure">By ordering you agree to our <Link className="link" href="/policies/terms" style={{ fontSize: 12 }} onClick={onClose}>Terms</Link> and <Link className="link" href="/policies/returns" style={{ fontSize: 12 }} onClick={onClose}>Return Policy</Link>.</p>
+        </>
+      )}
+      {!addrOk && err && <p className="msg-err" role="alert">{err}</p>}
     </form>
   );
 }
