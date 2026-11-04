@@ -10,6 +10,7 @@ export default function ShopProvider({ children, shipping }) {
   const [wish, setWish] = useState([]);
   const [ready, setReady] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [qc, setQc] = useState(false); // quick-checkout popup
   const [email, setEmail] = useState(null);
   const [toast, setToast] = useState(null);
   const tm = useRef();
@@ -34,13 +35,13 @@ export default function ShopProvider({ children, shipping }) {
     setToast({ text, bag }); clearTimeout(tm.current); tm.current = setTimeout(() => setToast(null), bag ? 3400 : 2400);
   }, []);
 
-  const add = (p, size, qty = 1) => {
+  const add = (p, size, qty = 1, silent = false) => {
     setItems((cur) => {
       const f = cur.find((i) => i.id === p.id && i.size === String(size));
       if (f) return cur.map((i) => (i === f ? { ...i, qty: Math.min(10, i.qty + qty) } : i));
       return [...cur, { id: p.id, slug: p.slug, name: p.name, price: p.price, image: p.images?.[0] || "", size: String(size), qty }];
     });
-    say(`${p.name} · UK ${size} added`, true);
+    if (!silent) say(`${p.name} · UK ${size} added`, true);
   };
   const setQty = (id, size, qty) => setItems((cur) => cur.map((i) => (i.id === id && i.size === size ? { ...i, qty } : i)).filter((i) => i.qty > 0));
   const remove = (id, size) => setItems((cur) => cur.filter((i) => !(i.id === id && i.size === size)));
@@ -57,7 +58,7 @@ export default function ShopProvider({ children, shipping }) {
   const ship = subtotal === 0 ? 0 : subtotal >= shipping.min ? 0 : shipping.fee;
 
   return (
-    <Ctx.Provider value={{ items, count, subtotal, ship, total: subtotal + ship, shipping, add, setQty, remove, clear, wish, toggleWish, drawer, setDrawer, email, say, ready }}>
+    <Ctx.Provider value={{ items, count, subtotal, ship, total: subtotal + ship, shipping, add, setQty, remove, clear, wish, toggleWish, drawer, setDrawer, qc, setQc, email, say, ready }}>
       {children}
       <div className={"toast" + (toast ? " show" : "")} role="status" aria-live="polite">
         <i /><span>{toast?.text}</span>

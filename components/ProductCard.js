@@ -24,7 +24,7 @@ export default function ProductCard({ p, colorMap = {}, extra = false, inert = f
   const saved = wish.includes(p.id);
   return (
     <article ref={ref} className={"card" + (extra ? " extra" : "")} style={{ "--i": index }} inert={inert ? "" : undefined}>
-      <div className="p-visual">
+      <div className="p-visual" data-k={["街", "闘", "走", "速", "型", "魂"][index % 6]} data-n={String(index + 1).padStart(2, "0")}>
         <Link className={"p-img" + (p.images?.[0] ? " has-img" : "")} href={`/products/${p.slug}`} aria-label={`${p.name}, ${inr(p.price)}`}>
           {p.images?.[0] ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" /> : <span className="corners" />}
         </Link>

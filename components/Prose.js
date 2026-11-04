@@ -7,6 +7,7 @@ export default function Prose({ text }) {
   for (const raw of String(text).split("\n")) {
     const l = raw.trim();
     if (!l) { flushP(); flushL(); }
+    else if (/^!\[[^\]]*\]\((https?:\/\/|\/)[^)\s]+\)$/.test(l)) { flushP(); flushL(); const m = l.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/); out.push(<figure key={out.length}><img src={m[2]} alt={m[1]} loading="lazy" decoding="async" /></figure>); }
     else if (l.startsWith("## ")) { flushP(); flushL(); out.push(<h2 key={out.length}>{l.slice(3)}</h2>); }
     else if (l.startsWith("- ")) { flushP(); list.push(l.slice(2)); }
     else if (/^\d+\.\s/.test(l)) { flushP(); list.push(l.replace(/^\d+\.\s/, "")); }
