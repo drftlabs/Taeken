@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Lightbox from "./Lightbox";
 
 // Product photos: auto-slides every 5s, loops forever in one direction, slow glide.
 // Pauses while someone is holding / hovering the photo or has the full-screen viewer open.
-export default function Gallery({ images, name, kanji = "闘" }) {
+export default function Gallery({ images, name, kanji = ["闘", "走"] }) {
   const n = images.length, loop = n > 1;
   const slides = loop ? [...images, images[0]] : images;
   const [pos, setPos] = useState(0), [anim, setAnim] = useState(true), [hold, setHold] = useState(false), [hover, setHover] = useState(false);
   const [box, setBox] = useState(false), [zoom, setZoom] = useState(false), [org, setOrg] = useState("50% 50%");
-  const x0 = useRef(null), sc = useRef(null);
+  const x0 = useRef(null);
+  const [k1, k2] = Array.isArray(kanji) ? kanji : [kanji, kanji];
   const cur = pos % n;
 
   const next = () => { if (!loop) return; setAnim(true); setPos((p) => (p >= n ? p : p + 1)); };
@@ -21,14 +23,6 @@ export default function Gallery({ images, name, kanji = "闘" }) {
   useEffect(() => { if (anim) return; const id = requestAnimationFrame(() => requestAnimationFrame(() => setAnim(true))); return () => cancelAnimationFrame(id); }, [anim]);
   useEffect(() => { if (!loop || hold || hover || box) return; const t = setInterval(next, 5000); return () => clearInterval(t); }, [loop, hold, hover, box, pos]); // eslint-disable-line
 
-  // full-screen viewer
-  useEffect(() => {
-    if (!box) return; document.body.style.overflow = "hidden";
-    const k = (e) => { if (e.key === "Escape") setBox(false); if (e.key === "ArrowRight") { setZoom(false); next(); } if (e.key === "ArrowLeft") { setZoom(false); prev(); } };
-    addEventListener("keydown", k); return () => { removeEventListener("keydown", k); document.body.style.overflow = ""; };
-  }, [box, pos]); // eslint-disable-line
-  useEffect(() => { if (zoom && sc.current) { const e = sc.current; e.scrollLeft = (e.scrollWidth - e.clientWidth) / 2; e.scrollTop = (e.scrollHeight - e.clientHeight) / 2; } }, [zoom]);
-
   const move = (e) => { const r = e.currentTarget.getBoundingClientRect(); setOrg(`${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`); };
   const swipe = { onTouchStart: (e) => { x0.current = e.touches[0].clientX; }, onTouchEnd: (e) => { if (x0.current == null || !loop) return; const d = e.changedTouches[0].clientX - x0.current; if (Math.abs(d) > 45) (d < 0 ? next : prev)(); x0.current = null; } };
   const holdProps = { onPointerDown: () => setHold(true), onPointerUp: () => setHold(false), onPointerCancel: () => setHold(false), onPointerLeave: () => { setHold(false); setHover(false); }, onPointerEnter: (e) => e.pointerType === "mouse" && setHover(true) };
@@ -36,7 +30,7 @@ export default function Gallery({ images, name, kanji = "闘" }) {
   return (
     <div className="gal">
       <div className="gal-main" {...swipe} {...holdProps}>
-        <span className="gal-kanji" aria-hidden="true">{kanji}</span>
+        <span className="gal-kanji k1" aria-hidden="true">{k1}</span><span className="gal-kanji k2" aria-hidden="true">{k2}</span>
         {n ? (
           <div className="gal-track" style={{ transform: `translateX(-${pos * 100}%)`, transition: anim ? "transform 1.1s cubic-bezier(.65,0,.35,1)" : "none" }} onTransitionEnd={ended}>
             {slides.map((src, k) => (
@@ -50,16 +44,7 @@ export default function Gallery({ images, name, kanji = "闘" }) {
         {loop && <div className="gal-dots" aria-hidden="true">{images.map((_, k) => <i key={k} className={k === cur ? "on" : ""} />)}</div>}
       </div>
       {loop && <div className="thumbs">{images.map((src, k) => <button key={k} className={k === cur ? "on" : ""} aria-label={`Show image ${k + 1}`} onClick={() => to(k)}><img src={src} alt="" loading="lazy" decoding="async" /></button>)}</div>}
-      {box && (
-        <div className="lb" role="dialog" aria-modal="true" aria-label={`${name} photos`}>
-          <div className="lb-top"><span className="lb-c">{cur + 1} / {n}</span><div><button aria-label="Zoom out" disabled={!zoom} onClick={() => setZoom(false)}>−</button><button aria-label="Zoom in" disabled={zoom} onClick={() => setZoom(true)}>+</button><button aria-label="Close" onClick={() => setBox(false)}>×</button></div></div>
-          <div className={"lb-scroll" + (zoom ? " z" : "")} ref={sc} onClick={(e) => e.target === e.currentTarget && setBox(false)} {...swipe}>
-            <img src={images[cur]} alt={`${name}, view ${cur + 1}`} onClick={() => setZoom((z) => !z)} draggable="false" />
-          </div>
-          {loop && !zoom && <><button className="lb-n prev" aria-label="Previous photo" onClick={prev}>‹</button><button className="lb-n next" aria-label="Next photo" onClick={next}>›</button></>}
-          <p className="lb-h">{zoom ? "Drag to look around · tap to zoom out" : "Tap the photo to zoom in"}</p>
-        </div>
-      )}
+      {box && <Lightbox images={images} index={cur} name={name} startZoom={zoom} onClose={() => setBox(false)} onIndex={(k) => setPos(k)} />}
     </div>
   );
 }

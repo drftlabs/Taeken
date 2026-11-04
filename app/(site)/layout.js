@@ -1,5 +1,6 @@
 import ShopProvider from "@/components/ShopProvider";
 import Header from "@/components/Header";
+import PageGuard from "@/components/PageGuard";
 import Ticker from "@/components/Ticker";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
@@ -17,6 +18,7 @@ export default async function SiteLayout({ children }) {
       <div className="grain" aria-hidden="true" />
       <div className="rail" aria-hidden="true"><span>TAEKEN ◆ 街の闘い ◆ MAKE YOUR MARK ◆ INDIA</span></div>
       <a className="skip" href="#main">Skip to content</a>
+      <PageGuard />
       <Header ticker={<Ticker items={settings.ticker} />} />
       <main id="main">{children}</main>
       <TrustBar s={settings} />

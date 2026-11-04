@@ -28,7 +28,7 @@ Next.js 14 + Supabase (database, login, image storage) + Razorpay (payments) + R
 6. **Project Settings → API**: copy the Project URL, the `anon` key and the `service_role` key (keep the last one secret).
 
 ### 2b. Updating an existing store (IMPORTANT, v2/v3 upgrade)
-If you already ran `schema.sql` and `seed.sql` earlier, open **SQL Editor**, run `supabase/migration_2.sql`, then `supabase/migration_3.sql` (adds extra product photos). It adds the new product fields (SKU, collections, SEO, story), COD/discount columns on orders, and the discount-codes table. Do this **before** (or right after) deploying the new code. Fresh installs don't need it because `schema.sql` already contains it.
+If you already ran `schema.sql` and `seed.sql` earlier, open **SQL Editor**, run `supabase/migration_2.sql`, then `migration_3.sql` (extra product photos), then `migration_4.sql` (free shipping above ₹1,499, delivery 3–4 days). It adds the new product fields (SKU, collections, SEO, story), COD/discount columns on orders, and the discount-codes table. Do this **before** (or right after) deploying the new code. Fresh installs don't need it because `schema.sql` already contains it.
 
 ## 3. Resend (emails, optional but recommended)
 resend.com → add domain `taeken.in` and add the DNS records it shows → create an API key. Set `EMAIL_FROM` like `Taeken <orders@taeken.in>`. Without a key the store works but sends no emails.

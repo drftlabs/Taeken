@@ -23,7 +23,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
   const [method, setMethod] = useState("online"), [code, setCode] = useState(""), [rule, setRule] = useState(null), [codeMsg, setCodeMsg] = useState(null);
   const [busy, setBusy] = useState(false), [err, setErr] = useState("");
   const lastPin = useRef(""), [eta, setEta] = useState("");
-  useEffect(() => { setEta(etaRange(cfg.etaMin || 5, cfg.etaMax || 8)); }, [cfg.etaMin, cfg.etaMax]);
+  useEffect(() => { setEta(etaRange(cfg.etaMin || 3, cfg.etaMax || 4)); }, [cfg.etaMin, cfg.etaMax]);
 
   // remember details on this device so the next order is one tap
   useEffect(() => { try { const s = JSON.parse(localStorage.getItem("tk_co") || "null"); if (s) { setF((x) => ({ ...x, ...s })); lastPin.current = s.pin || ""; } } catch {} }, []);
@@ -118,7 +118,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
         <>
           <section className="co-step reveal">
             <h2><i>03</i>Order summary</h2>
-            {eta && <p className="co-eta">🚚 Estimated delivery: <b>{eta}</b></p>}
+            {eta && <p className="co-eta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17" r="1.6" /><circle cx="17" cy="17" r="1.6" /></svg><span>Estimated delivery: <b>{eta}</b></span></p>}
             <div className="co-sum">
               {items.map((i) => <div className="li" key={i.id + i.size + (i.color || "")}><div className="thumb">{i.image && <img src={i.image} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size}{i.colorName ? ` · ${i.colorName}` : ""}</small>
                 <div className="co-qty"><button type="button" aria-label="Decrease quantity" onClick={() => setQty(i.id, i.size, i.qty - 1, i.color)}>−</button><span>{i.qty}</span><button type="button" aria-label="Increase quantity" onClick={() => setQty(i.id, i.size, Math.min(10, i.qty + 1), i.color)}>+</button><button type="button" className="co-rm" onClick={() => remove(i.id, i.size, i.color)}>Remove</button></div></div><div className="pr">{inr(i.price * i.qty)}</div></div>)}

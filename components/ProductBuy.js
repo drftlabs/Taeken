@@ -9,7 +9,7 @@ const Lock = () => <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 1
 
 export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false }) {
   const { add, wish, toggleWish, say, setQc, setDrawer } = useShop();
-  const [size, setSize] = useState(null), [err, setErr] = useState(false), [ci, setCi] = useState(0);
+  const [size, setSize] = useState(null), [err, setErr] = useState(false), [ci, setCi] = useState(0), [just, setJust] = useState(false);
   const color = colorOpts[ci] || null;
   const gridRef = useRef();
   const stock = size ? Number(p.sizes[size]) : 0;
@@ -18,7 +18,7 @@ export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false })
   const lowAt = Number(p.low_stock ?? 3);
   const need = () => { setErr(true); gridRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); say("Select your UK size first"); };
   const flyEl = () => document.querySelector(".gal-main img") || gridRef.current;
-  const addBag = () => { if (!size) return need(); add(p, size, 1, false, color, flyEl()); };
+  const addBag = () => { if (!size) return need(); add(p, size, 1, false, color, flyEl()); setJust(true); setTimeout(() => setJust(false), 1800); };
   const buyNow = () => { if (!size) return need(); add(p, size, 1, true, color); setQc(true); };   // opens checkout as a popup
   const saved = wish.includes(p.id);
   return (
@@ -31,7 +31,7 @@ export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false })
       </div>
       {size && stock > 0 && stock <= lowAt ? <p className="low">⚡ Only {stock} left in UK {size}</p> : !sold && totalLeft <= lowAt * 2 ? <p className="low">⚡ Selling fast: {totalLeft} pairs left in total</p> : null}
       <div className="pdp-actions">
-        <button className="btn" disabled={sold} onClick={addBag}>{sold ? "Sold out" : "Add to bag"}{!sold && <Arrow />}</button>
+        <button className={"btn addbtn" + (just ? " done" : "")} disabled={sold} onClick={addBag}>{sold ? "Sold out" : just ? "Added ✓" : "Add to bag"}{!sold && !just && <Arrow />}</button>
         <button className="heartbtn" aria-pressed={saved} aria-label={saved ? "Remove from wishlist" : "Save to wishlist"} onClick={() => toggleWish(p)}><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg></button>
       </div>
       {!sold && <button className="btn ghost buynow" onClick={buyNow}><Lock /> Buy it now <Arrow /></button>}

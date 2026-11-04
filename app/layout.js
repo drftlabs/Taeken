@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: { siteName: "Taeken", type: "website", locale: "en_IN", url: SITE_URL },
   twitter: { card: "summary_large_image" },
 };
-export const viewport = { themeColor: "#1a1a1b", width: "device-width", initialScale: 1, viewportFit: "cover" };
+export const viewport = { themeColor: "#1a1a1b", width: "device-width", initialScale: 1, maximumScale: 1, userScalable: false, viewportFit: "cover" };
 
 export default function RootLayout({ children }) {
   return (
