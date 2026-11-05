@@ -1,12 +1,13 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { saveProduct, deleteProduct, duplicateProduct } from "@/lib/actions/admin";
+import { saveProduct, deleteProduct, duplicateProduct, saveRow } from "@/lib/actions/admin";
 import { Field, uploadImage } from "./Fields";
 import RichText from "./RichText";
 import { slugify, inr } from "@/lib/format";
 
-export default function ProductForm({ product, collections, tags, colors, sizeKeys }) {
+export default function ProductForm({ product, collections, tags, colors: colors0, sizeKeys }) {
+  const [colors, setColors] = useState(colors0 || []), [nc, setNc] = useState({ name: "", hex: "#d7262b" }), [ncMsg, setNcMsg] = useState("");
   const isNew = !product;
   const blank = { name: "", slug: "", price: "", compare_price: "", cost_price: "", sku: "", barcode: "", weight_g: "", vendor: "Taeken", product_type: "", description: "", long_description: "", details: "", seo_title: "", seo_description: "", images: [], extra_images: [], colors: [], tags: [], sizes: Object.fromEntries(sizeKeys.map((s) => [s, 0])), collection_ids: [], active: true, featured: false, low_stock: 3, sort_order: 0 };
   const init = product ? { ...blank, ...Object.fromEntries(Object.entries(product).map(([k, v]) => [k, v ?? blank[k] ?? ""])), collection_ids: product.collection_ids?.length ? product.collection_ids : product.collection_id ? [product.collection_id] : [] } : blank;
@@ -76,6 +77,21 @@ export default function ProductForm({ product, collections, tags, colors, sizeKe
         <div className="chips" style={{ marginBottom: 18 }}>{tags.map((t) => <label key={t.slug} className={"chipsel" + (p.tags.includes(t.slug) ? " on" : "")}><input type="checkbox" checked={p.tags.includes(t.slug)} onChange={() => toggle("tags", t.slug)} /><span className="pill" style={{ background: t.bg, color: t.fg }}>{t.name}</span></label>)}{!tags.length && <span className="mut">No tags yet. Create them under Tags.</span>}</div>
         <span className="lbl">Colours available</span>
         <div className="chips" style={{ marginBottom: 18 }}>{colors.map((c) => <label key={c.slug} className={"chipsel" + (p.colors.includes(c.slug) ? " on" : "")}><input type="checkbox" checked={p.colors.includes(c.slug)} onChange={() => toggle("colors", c.slug)} /><span className="sw" style={{ background: c.hex }} />{c.name}</label>)}</div>
+        <div className="newcolor">
+          <input type="color" aria-label="Pick colour" value={/^#[0-9a-f]{6}$/i.test(nc.hex) ? nc.hex : "#000000"} onChange={(e) => setNc({ ...nc, hex: e.target.value })} />
+          <input type="text" aria-label="Hex code" value={nc.hex} onChange={(e) => setNc({ ...nc, hex: e.target.value })} placeholder="#d7262b" style={{ width: 100 }} />
+          <input type="text" aria-label="Colour name" value={nc.name} onChange={(e) => setNc({ ...nc, name: e.target.value })} placeholder="New colour name, e.g. Sage green" />
+          <button type="button" className="abtn" onClick={async () => {
+            const name = nc.name.trim(), hex = nc.hex.trim(); setNcMsg("");
+            if (!name) return setNcMsg("Type a colour name."); if (!/^#[0-9a-f]{6}$/i.test(hex)) return setNcMsg("Hex must look like #aabbcc.");
+            const slug = slugify(name);
+            if (colors.some((c) => c.slug === slug)) { setNcMsg("That colour already exists. Tick it above."); return; }
+            const r = await saveRow("colors", null, { name, hex, sort_order: colors.length + 1 });
+            if (r?.error) return setNcMsg(r.error);
+            setColors([...colors, { slug, name, hex }]); toggle("colors", slug); setNc({ name: "", hex: "#d7262b" });
+          }}>+ Add colour</button>
+          {ncMsg && <span className="mut" style={{ color: "#ff8a8a" }}>{ncMsg}</span>}
+        </div>
         <div className="af">
           <Field f={{ name: "vendor", label: "Vendor / brand", type: "text" }} value={p.vendor} onChange={set("vendor")} />
           <Field f={{ name: "product_type", label: "Product type", type: "text", help: "e.g. High top, Slide, Boot" }} value={p.product_type} onChange={set("product_type")} />

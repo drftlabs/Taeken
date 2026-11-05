@@ -64,3 +64,5 @@
 /* safety: storefront styles must never leak into the panel */
 .adm .panel{position:static;transform:none;width:auto;display:block;border-left:1px solid var(--a-line);transition:none}
 .adm .ghost:not(.abtn){position:static;transform:none;font:inherit;color:inherit}
+
+.newcolor{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-6px 0 18px}.newcolor input[type=color]{width:42px;height:38px;padding:0;border:1px solid #55555a;background:none;cursor:pointer}.newcolor input[type=text]{background:#121213;border:1px solid #55555a;color:#f5f3ee;padding:9px 10px;font:inherit}
