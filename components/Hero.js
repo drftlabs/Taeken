@@ -37,7 +37,7 @@ export default function Hero({ slides }) {
               <Media src={s.image} mobile={s.image_mobile} alt={s.title?.replace("|", " ")} position={s.position} ghost={GHOST[i % 3]} tag={`IMG ${String(i + 1).padStart(2, "0")}`} />
               <div className="shade" />
               <div className="copy">
-                <div className="kick"><span className="plate">No.<b>{String(i + 1).padStart(3, "0")}</b></span><span>{s.kicker}</span></div>
+                <div className="kick"><span>{s.kicker}</span></div>
                 <H className="hl">{lines(s.title)}</H>
                 <SmartLink className="btn" href={s.link}>{s.cta_text}<Arrow /></SmartLink>
               </div>
@@ -51,17 +51,9 @@ export default function Hero({ slides }) {
         <div className="laps">
           {slides.map((s, i) => (
             <button key={i} className={"lap" + (i < cur ? " done" : "") + (i === cur ? " run" : "")} aria-label={`Go to slide ${i + 1}`} aria-current={i === cur} onClick={() => go(i)}>
-              <span>{String(i + 1).padStart(2, "0")}</span>
               <span className="bar2"><i key={i === cur ? "run" + cur : "x" + i} onAnimationEnd={() => { if (i === cur && !reduce) go(cur + 1); }} /></span>
             </button>
           ))}
-        </div>
-        <div className="arrows">
-          <button className="ar pp" aria-label={paused ? "Play slideshow" : "Pause slideshow"} onClick={() => setPaused(!paused)}>
-            {paused ? <svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" /></svg> : <svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" /></svg>}
-          </button>
-          <button className="ar" aria-label="Previous slide" onClick={() => go(cur - 1)}><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>
-          <button className="ar" aria-label="Next slide" onClick={() => go(cur + 1)}><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
         </div>
       </div>
       <div className="checker" aria-hidden="true" />
