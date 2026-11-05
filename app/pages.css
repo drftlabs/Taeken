@@ -422,3 +422,9 @@ a.bi-in:hover{transform:scale(1.012)}
 .ok-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .ok-help{margin-top:26px;text-align:center;font-size:13px;color:var(--concrete)}.ok-help a{color:var(--chalk);text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:3px}
 @media(max-width:600px){.ok-actions .btn{width:100%;justify-content:center}.ok-row{padding:14px}}
+
+.ok-hero.center{max-width:none;padding-top:10px;display:flex;flex-direction:column;align-items:center}.ok-hero .lead{text-align:center;margin-bottom:10px}
+.ok-sum{margin-top:18px;border:1px solid var(--line);background:var(--bg2);padding:16px 20px}.ok-sum h2{font:400 18px var(--display);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.ok-it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.ok-it img,.ok-it i{width:54px;height:54px;object-fit:contain;background:#1b1b1d;flex:none}.ok-it div{flex:1;min-width:0}.ok-it b{display:block;font-size:14px}.ok-it span{font-size:12px;color:var(--concrete)}.ok-it em{font-style:normal;font-weight:800}
+.ok-to{padding-top:14px;display:grid;gap:2px}.ok-to span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--concrete)}.ok-to small{color:#cfcdc7;line-height:1.5}
+.ok-row.paid b{color:#7fd09a}

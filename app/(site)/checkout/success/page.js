@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ClearCart from "@/components/ClearCart";
 import TrackOpen from "@/components/TrackOpen";
+import OrderSummary from "@/components/OrderSummary";
 import PixelEvent from "@/components/PixelEvent";
 import { Arrow } from "@/components/Media";
 import { getSettings } from "@/lib/data";
@@ -25,7 +26,7 @@ export default async function Success({ searchParams }) {
     <div className="page ok-page"><ClearCart />
       {o && total > 0 && <PixelEvent event="Purchase" data={{ value: total, currency: "INR", content_type: "product", order_id: o }} eventId={"purchase-" + o} once={o} />}
       <div className="wrap" style={{ maxWidth: 760 }}>
-        <div className="ok-hero">
+        <div className="ok-hero center">
           <span className="stamp" aria-hidden="true">決</span>
           <p className="eyebrow" style={{ justifyContent: "center" }}>Thank you</p>
           <h1 className="page-title">Order <em>confirmed</em></h1>
@@ -33,11 +34,14 @@ export default async function Success({ searchParams }) {
         </div>
         <div className="ok-card">
           <div className="ok-row"><span>Order number</span><b className="ok-num">{o || "Check your email"}</b></div>
-          {total > 0 && <div className="ok-row"><span>Order total</span><b>{inr(total)}</b></div>}
-          {cod && due > 0 && <div className="ok-row cod"><span>Pay on delivery (cash / UPI to courier)</span><b>{inr(due)}</b></div>}
+          <div className="ok-row"><span>Payment type</span><b>{cod ? "Cash on delivery (part-paid online)" : "Paid online (Razorpay)"}</b></div>
+          {total > 0 && <div className="ok-row"><span>Total order value</span><b>{inr(total)}</b></div>}
+          {total > 0 && <div className="ok-row paid"><span>Payment done</span><b>{inr(Math.max(0, total - due))}</b></div>}
+          <div className={"ok-row " + (due > 0 ? "cod" : "paid")}><span>{due > 0 ? "Pending: pay on delivery" : "Pending"}</span><b>{due > 0 ? inr(due) : "₹0, fully paid"}</b></div>
           <div className="ok-row"><span>Estimated delivery</span><b>{etaRange(cfg.etaMin, cfg.etaMax)}</b></div>
         </div>
-        {cod && due > 0 && <p className="ok-note">Your advance is paid. Please keep <b>{inr(due)}</b> ready for the delivery partner. Our team may call or WhatsApp to confirm your address.</p>}
+        <OrderSummary order={o} />
+        {cod && due > 0 && <p className="ok-note">{total > due ? "Your advance is paid. " : ""}Please keep <b>{inr(due)}</b> ready for the delivery partner. Our team may call or WhatsApp to confirm your address.</p>}
         <ol className="ok-steps">{steps.map(([t, d], i) => <li key={t} className={i === 0 ? "on" : ""}><i>{i + 1}</i><div><b>{t}</b><span>{d}</span></div></li>)}</ol>
         <div className="ok-actions">
           {o && <TrackOpen className="btn" order={o}>Track this order <Arrow /></TrackOpen>}

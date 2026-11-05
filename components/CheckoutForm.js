@@ -66,7 +66,9 @@ export default function CheckoutForm({ modal = false, onClose }) {
     if (!contactOk) return setErr("Please check your name, email and 10-digit phone number.");
     if (!addrOk) return setErr("Please complete your delivery address.");
     setBusy(true); track("AddPaymentInfo", { value: price.total, currency: "INR" });
-    const done = (num, due, total) => { clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}`); };
+    const done = (num, due, total) => {
+      try { sessionStorage.setItem("tk_last", JSON.stringify({ o: num, total, due, method, name: f.name, addr: [f.line1, f.line2, f.area, f.city, f.state, f.pin].filter(Boolean).join(", "), items: items.map((i) => ({ n: i.name, s: i.size, c: i.colorName || "", q: i.qty, p: i.price, img: i.image })) })); } catch {}
+      clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}`); };
     try {
       const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
       const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not start payment");
