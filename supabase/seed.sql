@@ -21,7 +21,7 @@ insert into public.site_settings(key, value) values ('site', '{
   "refund_days": 7,
   "jurisdiction": "[City], India",
   "grievance_name": "[Grievance Officer name]",
-  "sizes": "6,7,8,9,10,11"
+  "sizes": "6,7,8,9,10,11,12"
 }'::jsonb) on conflict (key) do nothing;
 
 insert into public.tags(name, slug, bg, fg, sort_order) values

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // Approximate conversions: fit varies by style, so the note tells people to size up when between sizes.
-const ROWS = [["6", "39", "7", "24.6"], ["7", "40.5", "8", "25.4"], ["8", "42", "9", "26.2"], ["9", "43", "10", "27.1"], ["10", "44.5", "11", "27.9"], ["11", "46", "12", "28.8"]];
+const ROWS = [["6", "39", "7", "24.6"], ["7", "40.5", "8", "25.4"], ["8", "42", "9", "26.2"], ["9", "43", "10", "27.1"], ["10", "44.5", "11", "27.9"], ["11", "46", "12", "28.8"], ["12", "47.5", "13", "29.6"]];
 export default function SizeGuide() {
   const [open, setOpen] = useState(false);
   useEffect(() => { if (!open) return; const e = (ev) => ev.key === "Escape" && setOpen(false); addEventListener("keydown", e); document.body.style.overflow = "hidden"; return () => { removeEventListener("keydown", e); document.body.style.overflow = ""; }; }, [open]);

@@ -16,10 +16,11 @@ async function shrink(file) {
     return new File([blob], file.name.replace(/\.\w+$/, "") + ".webp", { type: "image/webp" });
   } catch { return file; }
 }
-export async function uploadImage(orig, folder = "misc") {
+export async function uploadImage(orig, folder = "misc", keepName = false) {
   const file = await shrink(orig);
   const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+  const base = String(orig.name || "").replace(/\.\w+$/, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  const path = keepName && base ? `${folder}/${base}--${Math.random().toString(36).slice(2, 7)}.${ext}` : `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
   const { error } = await browserClient().storage.from("media").upload(path, file, { cacheControl: "31536000", upsert: false, contentType: file.type });
   if (error) throw new Error(error.message);
   return browserClient().storage.from("media").getPublicUrl(path).data.publicUrl;

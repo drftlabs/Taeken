@@ -115,8 +115,8 @@ export default function ProductForm({ product, collections, tags, colors: colors
 
       <div className="panel"><h2 style={{ marginTop: 0 }}>Search engine listing</h2>
         <div className="af">
-          <Field f={{ name: "seo_title", label: "Page title", type: "text", help: "Blank = product name." }} value={p.seo_title} onChange={set("seo_title")} />
-          <Field f={{ name: "seo_description", label: "Meta description", type: "textarea", full: true, help: "About 150 characters. Blank = short description." }} value={p.seo_description} onChange={set("seo_description")} />
+          <Field f={{ name: "seo_title", label: "Page title", type: "text", help: `Default (leave blank): ${p.name || "the product name"}` }} value={p.seo_title} onChange={set("seo_title")} />
+          <Field f={{ name: "seo_description", label: "Meta description", type: "textarea", full: true, help: `Default (leave blank): the short description${p.description ? ` — "${p.description.slice(0, 60)}${p.description.length > 60 ? "…" : ""}"` : ""}. About 150 characters if you write your own.` }} value={p.seo_description} onChange={set("seo_description")} />
         </div>
         <div className="serp"><span>www.taeken.in › products › {p.slug || slugify(p.name) || "…"}</span><b>{p.seo_title || p.name || "Product title"}</b><p>{(p.seo_description || p.description || "Description").slice(0, 160)}</p></div>
       </div>
