@@ -23,7 +23,7 @@ export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false })
   const saved = wish.includes(p.id);
   return (
     <>
-      {colorOpts.length > 0 && <><div className="opt-label"><span>Colour</span><b>{color?.name}</b></div>
+      {colorOpts.length > 0 && <><div className="opt-label"><span>Colour</span></div>
         <div className="pdp-sw" role="radiogroup" aria-label="Colour">{colorOpts.map((o, k) => <button key={o.slug} role="radio" aria-checked={k === ci} className={k === ci ? "on" : ""} onClick={() => setCi(k)}><i style={{ background: o.hex }} />{o.name}</button>)}</div></>}
       <div className="opt-label"><span>UK size</span><span className="ol-r">{size ? <b>UK {size}</b> : <em>Select one</em>}<SizeGuide /></span></div>
       <div className={"size-grid" + (err && !size ? " err" : "")} ref={gridRef} role="radiogroup" aria-label="UK size">
@@ -35,7 +35,6 @@ export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false })
         <button className="heartbtn" aria-pressed={saved} aria-label={saved ? "Remove from wishlist" : "Save to wishlist"} onClick={() => toggleWish(p)}><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg></button>
       </div>
       {!sold && <button className="btn ghost buynow" onClick={buyNow}><Lock /> Buy it now <Arrow /></button>}
-      {!sold && <p className="paychips" aria-label="Accepted payments"><span>UPI</span><span>Visa</span><span>Mastercard</span><span>RuPay</span><span>Netbanking</span>{cod && <span className="cod">COD</span>}</p>}
 
       {/* floating checkout: appears the moment a size is picked */}
       {!sold && (

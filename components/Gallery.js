@@ -9,7 +9,7 @@ export default function Gallery({ images, name, kanji = ["闘", "走"] }) {
   const slides = loop ? [...images, images[0]] : images;
   const [pos, setPos] = useState(0), [anim, setAnim] = useState(true), [hold, setHold] = useState(false), [hover, setHover] = useState(false);
   const [box, setBox] = useState(false), [zoom, setZoom] = useState(false), [org, setOrg] = useState("50% 50%");
-  const x0 = useRef(null);
+  const x0 = useRef(null), mainRef = useRef(null), pz = useRef({ s: 1, x: 0, y: 0 }), [pzs, setPzs] = useState({ s: 1, x: 0, y: 0, sm: false });
   const [k1, k2] = Array.isArray(kanji) ? kanji : [kanji, kanji];
   const cur = pos % n;
 
@@ -23,19 +23,53 @@ export default function Gallery({ images, name, kanji = ["闘", "走"] }) {
   useEffect(() => { if (anim) return; const id = requestAnimationFrame(() => requestAnimationFrame(() => setAnim(true))); return () => cancelAnimationFrame(id); }, [anim]);
   useEffect(() => { if (!loop || hold || hover || box) return; const t = setInterval(next, 5000); return () => clearInterval(t); }, [loop, hold, hover, box, pos]); // eslint-disable-line
 
+  // pinch-to-zoom on the photo itself (page stays fixed). Pinch out/in, drag when zoomed, double-tap to reset.
+  const setZ = (v, sm = false) => { pz.current = v; setPzs({ ...v, sm }); };
+  useEffect(() => { setZ({ s: 1, x: 0, y: 0 }, true); }, [cur]); // eslint-disable-line
+  useEffect(() => {
+    const el = mainRef.current; if (!el) return;
+    const g = { d0: 0, s0: 1, sx: 0, sy: 0, ox: 0, oy: 0, mode: "", tap: 0 };
+    const clampZ = (v) => { const r = el.getBoundingClientRect(), s = Math.min(4, Math.max(1, v.s)), mx = (r.width * (s - 1)) / 2, my = (r.height * (s - 1)) / 2; return { s, x: s === 1 ? 0 : Math.max(-mx, Math.min(mx, v.x)), y: s === 1 ? 0 : Math.max(-my, Math.min(my, v.y)) }; };
+    const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const start = (e) => {
+      if (e.touches.length === 2) { g.mode = "pinch"; g.d0 = dist(e.touches); g.s0 = pz.current.s; e.preventDefault(); setHold(true); }
+      else if (e.touches.length === 1) { g.sx = e.touches[0].clientX; g.sy = e.touches[0].clientY; g.ox = pz.current.x; g.oy = pz.current.y; g.mode = pz.current.s > 1 ? "pan" : ""; }
+    };
+    const move = (e) => {
+      if (g.mode === "pinch" && e.touches.length === 2) {
+        e.preventDefault(); const r = el.getBoundingClientRect(), t = e.touches;
+        const cx = (t[0].clientX + t[1].clientX) / 2 - r.left - r.width / 2, cy = (t[0].clientY + t[1].clientY) / 2 - r.top - r.height / 2;
+        const ns = Math.min(4, Math.max(1, g.s0 * (dist(t) / g.d0))), k = ns / pz.current.s, o = pz.current;
+        setZ(clampZ({ s: ns, x: cx - (cx - o.x) * k, y: cy - (cy - o.y) * k }));
+      } else if (g.mode === "pan" && e.touches.length === 1) {
+        e.preventDefault(); setZ(clampZ({ s: pz.current.s, x: g.ox + e.touches[0].clientX - g.sx, y: g.oy + e.touches[0].clientY - g.sy }));
+      }
+    };
+    const end = (e) => {
+      if (e.touches.length === 0) {
+        if (g.mode === "pinch" && pz.current.s < 1.06) setZ({ s: 1, x: 0, y: 0 }, true);
+        const moved = Math.abs((e.changedTouches[0]?.clientX || 0) - g.sx) + Math.abs((e.changedTouches[0]?.clientY || 0) - g.sy) > 10;
+        if (!g.mode && !moved && pz.current.s > 1) { const now = Date.now(); if (now - g.tap < 320) setZ({ s: 1, x: 0, y: 0 }, true); g.tap = now; }
+        else if (g.mode === "pan" && !moved) { const now = Date.now(); if (now - g.tap < 320) setZ({ s: 1, x: 0, y: 0 }, true); g.tap = now; }
+        g.mode = ""; setHold(pz.current.s > 1);
+      } else if (e.touches.length === 1) { g.mode = pz.current.s > 1 ? "pan" : ""; g.sx = e.touches[0].clientX; g.sy = e.touches[0].clientY; g.ox = pz.current.x; g.oy = pz.current.y; }
+    };
+    el.addEventListener("touchstart", start, { passive: false }); el.addEventListener("touchmove", move, { passive: false }); el.addEventListener("touchend", end); el.addEventListener("touchcancel", end);
+    return () => { el.removeEventListener("touchstart", start); el.removeEventListener("touchmove", move); el.removeEventListener("touchend", end); el.removeEventListener("touchcancel", end); };
+  }, [loop]); // eslint-disable-line
   const move = (e) => { const r = e.currentTarget.getBoundingClientRect(); setOrg(`${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`); };
-  const swipe = { onTouchStart: (e) => { x0.current = e.touches[0].clientX; }, onTouchEnd: (e) => { if (x0.current == null || !loop) return; const d = e.changedTouches[0].clientX - x0.current; if (Math.abs(d) > 45) (d < 0 ? next : prev)(); x0.current = null; } };
+  const swipe = { onTouchStart: (e) => { x0.current = e.touches.length === 1 ? e.touches[0].clientX : null; }, onTouchEnd: (e) => { if (x0.current == null || !loop || pz.current.s > 1.02) { x0.current = null; return; } const d = e.changedTouches[0].clientX - x0.current; if (Math.abs(d) > 45) (d < 0 ? next : prev)(); x0.current = null; } };
   const holdProps = { onPointerDown: () => setHold(true), onPointerUp: () => setHold(false), onPointerCancel: () => setHold(false), onPointerLeave: () => { setHold(false); setHover(false); }, onPointerEnter: (e) => e.pointerType === "mouse" && setHover(true) };
 
   return (
     <div className="gal">
-      <div className="gal-main" {...swipe} {...holdProps}>
+      <div className="gal-main" ref={mainRef} {...swipe} {...holdProps}>
         <span className="gal-kanji k1" aria-hidden="true">{k1}</span><span className="gal-kanji k2" aria-hidden="true">{k2}</span>
         {n ? (
           <div className="gal-track" style={{ transform: `translateX(-${pos * 100}%)`, transition: anim ? "transform 1.1s cubic-bezier(.65,0,.35,1)" : "none" }} onTransitionEnd={ended}>
             {slides.map((src, k) => (
               <div className="gal-slide" key={k} aria-hidden={k % n !== cur}>
-                <button className="gal-zoom" onMouseMove={move} onClick={() => { setZoom(false); setBox(true); }} aria-label="Open photo full screen"><img src={src} alt={`${name}, view ${(k % n) + 1}`} style={{ transformOrigin: org }} fetchPriority={k === 0 ? "high" : undefined} decoding="async" draggable="false" /></button>
+                <button className="gal-zoom" onMouseMove={move} onClick={() => { setZoom(false); setBox(true); }} aria-label="Open photo full screen"><img src={src} alt={`${name}, view ${(k % n) + 1}`} style={k % n === cur && (pzs.s > 1 || pzs.sm) ? { transform: `translate(${pzs.x}px,${pzs.y}px) scale(${pzs.s})`, transition: pzs.sm ? "transform .3s cubic-bezier(.2,.8,.2,1)" : "none", transformOrigin: "50% 50%" } : { transformOrigin: org }} fetchPriority={k === 0 ? "high" : undefined} decoding="async" draggable="false" /></button>
               </div>
             ))}
           </div>

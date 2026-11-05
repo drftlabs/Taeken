@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TrackOpen from "./TrackOpen";
 import { POLICY_LIST } from "@/lib/legalDefaults";
 
 export default function Footer({ settings, collections }) {
@@ -15,16 +16,14 @@ export default function Footer({ settings, collections }) {
         </div>
         <div className="f-cols">
           <div><h4>Shop</h4><Link href="/collections/all">All sneakers</Link>{collections.map((c) => <Link key={c.id} href={`/collections/${c.slug}`}>{c.name}</Link>)}</div>
-          <div><h4>Taeken</h4><Link href="/our-story">Our story</Link><Link href="/contact">Contact us</Link><Link href="/complaint">Raise a complaint</Link><Link href="/track">Track order</Link><Link href="/account">Account / Log in</Link></div>
+          <div><h4>Taeken</h4><Link href="/our-story">Our story</Link><Link href="/contact">Contact us</Link><Link href="/complaint">Raise a complaint</Link><TrackOpen className="f-link">Track order</TrackOpen><Link href="/account">Account / Log in</Link></div>
           <div><h4>Legal</h4>{POLICY_LIST.map((p) => <Link key={p.slug} href={`/policies/${p.slug}`}>{p.title}</Link>)}</div>
         </div>
       </div>
-      <form className="f-track" action="/track" method="get" aria-label="Track your order">
-        <div><b>Track your order</b><small>Enter your order number and the email you used at checkout.</small></div>
-        <input name="order" placeholder="Order no. e.g. TK-1001" aria-label="Order number" required autoCapitalize="characters" />
-        <input name="email" type="email" placeholder="Email" aria-label="Email used at checkout" required />
-        <button className="btn" type="submit">Track<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>
-      </form>
+      <div className="f-track">
+        <div><b>Track your order</b><small>Have your order number and email ready.</small></div>
+        <TrackOpen className="btn">Track order<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></TrackOpen>
+      </div>
       <div className="f-bot"><span>© {new Date().getFullYear()} {settings.business_name}. Make your mark.</span><span>India · INR ₹ · Payments by Razorpay</span></div>
       <div className="f-kana" aria-hidden="true"><span>テイケン</span><i /><span>街</span><i /><span>闘</span><i /><span>走</span></div>
       <div className="f-big" aria-hidden="true">Make your mark</div>

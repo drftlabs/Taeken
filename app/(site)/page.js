@@ -28,7 +28,7 @@ export default async function Home() {
           case "banner": return <BannerBlock key={b.id} c={{ ...c, title: c.title || b.title }} />;
           case "collections": return <div key={b.id}><CollectionsBlock c={c} collections={collections} /><Tape light /></div>;
           case "image": return <ImageBlock key={b.id} c={{ ...c, title: c.title || b.title }} />;
-          case "story": return <div key={b.id}><StoryBlock c={c} /><WhyTaeken cfg={shippingCfg(settings)} settings={settings} /></div>;
+          case "story": return <div key={b.id}><StoryBlock c={c} /><WhyTaeken /></div>;
           default: return null;
         }
       })}

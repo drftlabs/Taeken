@@ -53,10 +53,10 @@ export default async function ProductPage({ params }) {
             <ProductBuy p={p} sizeKeys={sizeKeys} cod={cfg.codEnabled} colorOpts={(p.colors || []).map((c) => ({ slug: c, name: cmap[c]?.name || c, hex: cmap[c]?.hex || "#777" }))} />
             <PinCheck days={settings.delivery_days} cod={cfg.codEnabled} etaMin={cfg.etaMin} etaMax={cfg.etaMax} />
             <Reveal as="ul" className="trust2" delay={80}>
-              <li><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg><b>Secure payment</b><small>UPI, cards, netbanking via Razorpay</small></li>
-              <li><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17" r="1.6" /><circle cx="17" cy="17" r="1.6" /></svg><b>{Number(settings.free_shipping_min) > 0 ? `Free shipping ${inr(settings.free_shipping_min)}+` : "Fast delivery"}</b><small>Arrives in {settings.delivery_days}</small></li>
-              <li><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5" /></svg><b>{settings.return_days}-day returns</b><small>Plus {settings.exchange_days}-day size exchange</small></li>
-              {cfg.codEnabled && <li><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1" /><circle cx="12" cy="12" r="2.5" /></svg><b>Cash on delivery</b><small>Pay just {cfg.codPct}% now</small></li>}
+              <li><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg><b>Secure payment</b><small>UPI, cards, netbanking</small></li>
+              <li><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17" r="1.6" /><circle cx="17" cy="17" r="1.6" /></svg><b>{Number(settings.free_shipping_min) > 0 ? `Free shipping ${inr(settings.free_shipping_min)}+` : "Fast delivery"}</b><small>{settings.delivery_days}</small></li>
+              <li><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5" /></svg><b>{settings.return_days}-day returns</b><small>Easy exchange</small></li>
+              {cfg.codEnabled && <li><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1" /><circle cx="12" cy="12" r="2.5" /></svg><b>Cash on delivery</b><small>Pay {cfg.codPct}% now</small></li>}
             </Reveal>
             {p.images?.length > 0 && <Reveal className="pdp-last" delay={60}>
               <span className="pl-k" aria-hidden="true">{kanjiPair(p.slug)[1]}</span><span className="pl-g" aria-hidden="true" />
