@@ -39,6 +39,15 @@ For Supabase login codes to come from your domain, also set up Resend as custom 
 2. Dashboard → Settings → Webhooks → add `https://www.taeken.in/api/razorpay/webhook`, events `payment.captured` and `order.paid`, and set a secret.
 3. Before going live, switch to Live keys and update them in Vercel.
 
+### 4b. Razorpay go-live steps (live account is ready)
+1. Razorpay Dashboard → **Account & Settings → API Keys → Generate Key** (use *Test mode* first, switch to *Live* later). Copy the Key ID and Secret (shown once).
+2. Vercel → Project → **Settings → Environment Variables** add: `RAZORPAY_KEY_ID`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` (both = Key ID), `RAZORPAY_KEY_SECRET`. Redeploy.
+3. Razorpay → **Settings → Webhooks → Add**: URL `https://www.taeken.in/api/razorpay/webhook`, events `payment.captured` and `order.paid`, set a secret, put the same secret in Vercel as `RAZORPAY_WEBHOOK_SECRET`. Redeploy.
+4. Test: place an order with Razorpay test UPI/cards, confirm it shows Paid in Admin → Orders and the email arrives. Then swap to Live keys, redeploy, and test with a small real order.
+
+### 4c. Meta Pixel
+Admin → **Settings → Meta (Facebook) Pixel ID** (digits only) → Save. Events sent: PageView, ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo, Purchase (with order value in INR). Verify with the Meta Pixel Helper Chrome extension or Events Manager → Test events.
+
 ## 5. Vercel (hosting)
 1. vercel.com → Add New → Project → import the GitHub repo (framework: Next.js, auto-detected).
 2. Add environment variables (see `.env.example`):

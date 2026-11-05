@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { dayFmt, STATUS, STEPS, inr } from "@/lib/format";
 
 // "Track order" window. Open it from anywhere with openTrack() (footer button / link).
-export const openTrack = () => window.dispatchEvent(new Event("tk:track"));
+export const openTrack = (order = "") => window.dispatchEvent(new CustomEvent("tk:track", { detail: { order } }));
 
 export default function TrackModal() {
   const [open, setOpen] = useState(false), [num, setNum] = useState(""), [email, setEmail] = useState(""), [busy, setBusy] = useState(false), [err, setErr] = useState(""), [order, setOrder] = useState(null);
   useEffect(() => {
-    const o = () => { setOpen(true); setErr(""); setOrder(null); try { const s = JSON.parse(localStorage.getItem("tk_co") || "null"); if (s?.email) setEmail((e) => e || s.email); } catch {} };
+    const o = (e) => { setOpen(true); setErr(""); setOrder(null); if (e?.detail?.order) setNum(String(e.detail.order)); try { const s = JSON.parse(localStorage.getItem("tk_co") || "null"); if (s?.email) setEmail((e) => e || s.email); } catch {} };
     addEventListener("tk:track", o); return () => removeEventListener("tk:track", o);
   }, []);
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useShop } from "./ShopProvider";
 import { inr, STATES, etaRange } from "@/lib/format";
+import { track } from "@/lib/track";
 import { priceOrder } from "@/lib/pricing";
 import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
@@ -57,16 +58,19 @@ export default function CheckoutForm({ modal = false, onClose }) {
 
   if (ready && !items.length) return <div className="center"><h1 className="page-title">Your bag is <em>empty</em></h1><p className="lead">Pick a pair first.</p><Link className="btn" href="/collections/all" onClick={onClose}>Shop the collection <Arrow /></Link></div>;
 
+  const fired = useRef(false);
+  useEffect(() => { if (ready && items.length && !fired.current) { fired.current = true; track("InitiateCheckout", { content_ids: items.map((i) => i.id), num_items: items.reduce((t, i) => t + i.qty, 0), value: subtotal, currency: "INR" }); } }, [ready, items.length]); // eslint-disable-line
+
   async function pay(e) {
     e.preventDefault(); setErr("");
     if (!contactOk) return setErr("Please check your name, email and 10-digit phone number.");
     if (!addrOk) return setErr("Please complete your delivery address.");
-    setBusy(true);
-    const done = (num, due) => { clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}`); };
+    setBusy(true); track("AddPaymentInfo", { value: price.total, currency: "INR" });
+    const done = (num, due, total) => { clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}`); };
     try {
       const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
       const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not start payment");
-      if (d.cod) return done(d.orderNumber, d.due);
+      if (d.cod) return done(d.orderNumber, d.due, d.total);
       await loadRzp();
       const rz = new window.Razorpay({
         key: d.key, amount: d.amount, currency: "INR", name: "Taeken", description: d.method === "cod" ? `Order ${d.orderNumber}: 10% advance (COD)` : `Order ${d.orderNumber}`, order_id: d.rzpOrderId,
@@ -76,7 +80,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
           const v = await fetch("/api/checkout/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order_id: d.orderId, ...resp }) });
           const vd = await v.json();
           if (!v.ok) { setBusy(false); setErr((vd.error || "Verification failed") + " If money was deducted, it will be confirmed automatically or refunded. Contact us with order " + d.orderNumber + "."); return; }
-          done(vd.orderNumber, d.due);
+          done(vd.orderNumber, d.due, d.total);
         },
       });
       rz.on("payment.failed", (x) => { setBusy(false); setErr(x.error?.description || "Payment failed. Please try again."); });

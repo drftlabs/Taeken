@@ -9,6 +9,7 @@ import Prose from "@/components/Prose";
 import { shippingCfg } from "@/lib/pricing";
 import Reveal from "@/components/Reveal";
 import DM from "@/components/DM";
+import PixelEvent from "@/components/PixelEvent";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import { inr, SITE_URL, kanjiPair } from "@/lib/format";
 
@@ -34,6 +35,7 @@ export default async function ProductPage({ params }) {
   const ld = { "@context": "https://schema.org", "@type": "Product", name: p.name, image: p.images, description: p.description || p.name, brand: { "@type": "Brand", name: "Taeken" }, ...(p.sku ? { sku: p.sku } : {}), offers: { "@type": "Offer", priceCurrency: "INR", price: p.price, availability: sizeKeys.some((s) => p.sizes[s] > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${SITE_URL}/products/${p.slug}` } };
   return (
     <div className="page has-sticky pdp-page">
+      <PixelEvent event="ViewContent" data={{ content_ids: [p.id], content_name: p.name, content_type: "product", value: p.price, currency: "INR" }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <div className="wrap">
         <div className="crumbs"><Link href="/">Home</Link>{col && <Link href={`/collections/${col.slug}`}>{col.name}</Link>}<span>{p.name}</span></div>

@@ -20,7 +20,8 @@ const G = [
     { name: "cod_enabled", label: "Offer cash on delivery (COD)", type: "checkbox" },
     { name: "cod_prepaid_pct", label: "COD: % paid online upfront", type: "number", help: "10 = customer pays 10% via Razorpay, the rest in cash. 0 = fully cash." },
     { name: "cod_fee", label: "COD delivery fee (₹)", type: "number", help: "Added to every COD order and shown at checkout." },
-    { name: "whatsapp", label: "WhatsApp number (with country code)", type: "text", help: "e.g. 919876543210. Shows a chat button on the site. Blank = hidden." }]],
+    { name: "whatsapp", label: "WhatsApp number (with country code)", type: "text", help: "e.g. 919876543210. Shows a chat button on the site. Blank = hidden." },
+    { name: "meta_pixel_id", label: "Meta (Facebook) Pixel ID", type: "text", help: "Digits only, from Meta Events Manager. Tracks PageView, ViewContent, AddToCart, InitiateCheckout and Purchase for your ads. Blank = off." }]],
   ["Catalogue", [{ name: "sizes", label: "UK sizes offered (comma separated)", type: "text", help: "e.g. 6,7,8,9,10,11. Used in the product form." }]],
 ];
 

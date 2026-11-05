@@ -1,16 +1,51 @@
 import Link from "next/link";
 import ClearCart from "@/components/ClearCart";
+import TrackOpen from "@/components/TrackOpen";
+import PixelEvent from "@/components/PixelEvent";
 import { Arrow } from "@/components/Media";
+import { getSettings } from "@/lib/data";
+import { etaRange, inr } from "@/lib/format";
+import { shippingCfg } from "@/lib/pricing";
+
 export const metadata = { title: "Order confirmed", robots: { index: false } };
-export default function Success({ searchParams }) {
-  const due = Math.max(0, parseInt(searchParams.due) || 0);
+export const dynamic = "force-dynamic";
+
+export default async function Success({ searchParams }) {
+  const settings = await getSettings(), cfg = shippingCfg(settings);
+  const due = Math.max(0, parseInt(searchParams.due) || 0), total = Math.max(0, parseInt(searchParams.v) || 0);
   const o = String(searchParams.o || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 20);
+  const cod = searchParams.m === "cod" || due > 0;
+  const steps = [
+    ["Confirmed", "We have your order and a confirmation email is on its way."],
+    ["Packed", `Packed and handed to the courier within ${settings.dispatch_days || "1–2 business days"}.`],
+    ["On the way", "You get the courier name and a tracking link by email."],
+    ["Delivered", `Expected ${etaRange(cfg.etaMin, cfg.etaMax)}.`],
+  ];
   return (
-    <div className="page"><ClearCart /><div className="center">
-      <span className="stamp" aria-hidden="true" style={{ marginBottom: 24 }}>決</span>
-      <h1 className="page-title">Order <em>confirmed</em></h1>
-      <p className="lead">{o ? <>Your order number is <b style={{ color: "var(--chalk)" }}>{o}</b>. </> : null}{due > 0 && <>Please keep <b style={{ color: "var(--chalk)" }}>₹{due.toLocaleString("en-IN")}</b> ready in cash for the delivery partner. </>}A confirmation is on its way to your email. We create your account from that email, so you can log in with a one-time code to see your order and tracking.</p>
-      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}><Link className="btn" href="/account">View my orders <Arrow /></Link><Link className="btn ghost" href="/collections/all">Keep shopping</Link></div>
-    </div></div>
+    <div className="page ok-page"><ClearCart />
+      {o && total > 0 && <PixelEvent event="Purchase" data={{ value: total, currency: "INR", content_type: "product", order_id: o }} eventId={"purchase-" + o} once={o} />}
+      <div className="wrap" style={{ maxWidth: 760 }}>
+        <div className="ok-hero">
+          <span className="stamp" aria-hidden="true">決</span>
+          <p className="eyebrow" style={{ justifyContent: "center" }}>Thank you</p>
+          <h1 className="page-title">Order <em>confirmed</em></h1>
+          <p className="lead">Your pair is locked in. Make your mark.</p>
+        </div>
+        <div className="ok-card">
+          <div className="ok-row"><span>Order number</span><b className="ok-num">{o || "Check your email"}</b></div>
+          {total > 0 && <div className="ok-row"><span>Order total</span><b>{inr(total)}</b></div>}
+          {cod && due > 0 && <div className="ok-row cod"><span>Pay on delivery (cash / UPI to courier)</span><b>{inr(due)}</b></div>}
+          <div className="ok-row"><span>Estimated delivery</span><b>{etaRange(cfg.etaMin, cfg.etaMax)}</b></div>
+        </div>
+        {cod && due > 0 && <p className="ok-note">Your advance is paid. Please keep <b>{inr(due)}</b> ready for the delivery partner. Our team may call or WhatsApp to confirm your address.</p>}
+        <ol className="ok-steps">{steps.map(([t, d], i) => <li key={t} className={i === 0 ? "on" : ""}><i>{i + 1}</i><div><b>{t}</b><span>{d}</span></div></li>)}</ol>
+        <div className="ok-actions">
+          {o && <TrackOpen className="btn" order={o}>Track this order <Arrow /></TrackOpen>}
+          <Link className="btn ghost" href="/account">My orders</Link>
+          <Link className="btn ghost" href="/collections/all">Keep shopping</Link>
+        </div>
+        <p className="ok-help">Need help? {settings.whatsapp ? <><a href={`https://wa.me/${settings.whatsapp}?text=${encodeURIComponent("Hi Taeken, about order " + o)}`} target="_blank" rel="noopener">WhatsApp us</a> or </> : null}<Link href="/contact">contact us</Link>. {cfg.returnDays}-day returns and {cfg.exchangeDays}-day size exchange apply.</p>
+      </div>
+    </div>
   );
 }

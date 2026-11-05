@@ -405,3 +405,20 @@ a.bi-in:hover{transform:scale(1.012)}
 .tm-form input{background:#121213;border:1px solid #55555a;color:var(--chalk);padding:14px;font:600 16px var(--body)}.tm-form input:focus{outline:0;border-color:var(--red)}
 .tm-form .btn{margin-top:14px;justify-content:center}
 .tm-msg{margin-top:16px}.tm-order{margin-top:22px}.tm-sub{font-size:12px;color:var(--concrete);margin-top:4px}
+
+/* ORDER CONFIRMED */
+.ok-hero{text-align:center;padding:10px 0 26px}.ok-hero .stamp{margin-bottom:22px;animation:stampin .8s var(--ease) both}
+@keyframes stampin{from{transform:rotate(-9deg) scale(2.2);opacity:0}to{transform:rotate(-9deg) scale(1);opacity:1}}
+.ok-card{border:1px solid var(--line);border-top:3px solid var(--red);background:var(--bg2)}
+.ok-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line);font-size:14px}.ok-row:last-child{border-bottom:0}
+.ok-row span{color:var(--concrete)}.ok-row b{font-size:16px;text-align:right}.ok-num{font:400 26px var(--display);letter-spacing:.1em;color:var(--red)}
+.ok-row.cod{background:rgba(215,38,43,.1)}.ok-row.cod b{color:var(--red);font-size:20px}
+.ok-note{margin-top:14px;font-size:14px;line-height:1.6;color:#cfcdc7}.ok-note b{color:var(--chalk)}
+.ok-steps{list-style:none;margin:30px 0;display:grid;gap:0}
+.ok-steps li{display:flex;gap:14px;padding:0 0 22px;position:relative}.ok-steps li:not(:last-child):before{content:"";position:absolute;left:15px;top:32px;bottom:0;width:2px;background:#3a3a3e}
+.ok-steps i{flex:none;width:32px;height:32px;display:grid;place-items:center;border:2px solid #55555a;font:800 13px var(--body);font-style:normal;background:var(--bg)}
+.ok-steps li.on i{background:var(--red);border-color:var(--red);color:#fff}
+.ok-steps b{display:block;font:400 18px var(--display);letter-spacing:.06em;text-transform:uppercase}.ok-steps span{font-size:13px;color:var(--concrete);line-height:1.5}
+.ok-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.ok-help{margin-top:26px;text-align:center;font-size:13px;color:var(--concrete)}.ok-help a{color:var(--chalk);text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:3px}
+@media(max-width:600px){.ok-actions .btn{width:100%;justify-content:center}.ok-row{padding:14px}}

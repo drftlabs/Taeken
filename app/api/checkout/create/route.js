@@ -64,13 +64,13 @@ export async function POST(req) {
   if (price.payNow === 0) {
     const r = await markPaid(order.id, "COD");
     if (r.error) return NextResponse.json({ error: r.error }, { status: 500 });
-    return NextResponse.json({ cod: true, orderNumber: order.order_number, due: price.due });
+    return NextResponse.json({ cod: true, orderNumber: order.order_number, due: price.due, total: price.total });
   }
   try {
     const rzp = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
     const ro = await rzp.orders.create({ amount: price.payNow * 100, currency: "INR", receipt: order.order_number, notes: { order_id: order.id, method } });
     await sb.from("orders").update({ razorpay_order_id: ro.id }).eq("id", order.id);
-    return NextResponse.json({ orderId: order.id, orderNumber: order.order_number, rzpOrderId: ro.id, amount: price.payNow * 100, due: price.due, method, key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID, prefill: customer });
+    return NextResponse.json({ orderId: order.id, orderNumber: order.order_number, rzpOrderId: ro.id, amount: price.payNow * 100, due: price.due, total: price.total, method, key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID, prefill: customer });
   } catch (e) {
     console.error("[razorpay create]", e);
     return NextResponse.json({ error: "Payment gateway error. Please try again." }, { status: 502 });
