@@ -296,3 +296,96 @@
 .story-k{animation:kdrift 16s ease-in-out infinite alternate}
 @media(max-width:860px){.gal-kanji.k1{left:-8%;top:-2%}.gal-kanji.k2{right:-8%;bottom:-3%}}
 @media(prefers-reduced-motion:reduce){.gal-slide .gal-zoom,.gal-slide:after,.gal-kanji,.addbtn:before,.story-k{animation:none!important}.pdp-info>*,.pdp-in .gal,.pdp-name span,.gal-slide img,.pdp-price:after{animation-duration:.01s!important;animation-delay:0s!important}.rv{opacity:1;transform:none;transition:none}}
+
+/* ============ ROUND 5 ============ */
+/* BUG FIX: entrance animation must not touch the fixed bars (it was overriding their translate) */
+.pdp-info>*:not(.float-co):not(.stickybar):not(.vtype){animation:rise .7s var(--ease) both}
+.pdp-info>.float-co,.pdp-info>.stickybar{animation:none}
+.pdp-info{position:relative}
+/* the page-wide faint 街 collided with the photo words; the photo carries its own pair */
+.pdp-page:before{display:none}
+.gal-col{position:relative}
+.gal-kanji.k1{left:3%;top:2%;font-size:42cqw}
+.gal-kanji.k2{right:3%;bottom:5%;font-size:36cqw}
+@media(max-width:860px){.gal-kanji.k1{left:3%;top:2%}.gal-kanji.k2{right:3%;bottom:5%}}
+
+/* vertical typography: English + Japanese */
+.vtype{position:absolute;display:flex;align-items:center;gap:14px;writing-mode:vertical-rl;text-transform:uppercase;pointer-events:none;user-select:none;white-space:nowrap}
+.vtype b{font:800 11px var(--body);letter-spacing:.42em;color:var(--chalk)}
+.vtype em{font:800 10px var(--body);letter-spacing:.34em;color:var(--concrete);font-style:normal}
+.vtype i{font:900 22px/1 var(--jp);letter-spacing:.12em;color:var(--red);font-style:normal}
+.vtype:before{content:"";width:2px;height:46px;background:var(--red);transform:skewX(-14deg)}
+.vt-l{right:-46px;top:6%}
+.vt-r{right:-34px;top:-6px}
+@media(max-width:1100px){.vt-l{right:-34px}.vt-r{display:none}}
+@media(max-width:860px){.vt-l{right:auto;left:6px;top:auto;bottom:12%;gap:8px}.vt-l em{display:none}.vt-l b{font-size:9px}.vt-l i{font-size:15px}.vt-l:before{height:30px}}
+.story{position:relative}
+.story:before{content:"TAEKEN 街";position:absolute;left:-10px;top:6%;writing-mode:vertical-rl;font:400 clamp(90px,12vw,170px)/1 var(--display);letter-spacing:.06em;color:transparent;-webkit-text-stroke:1px rgba(245,243,238,.12);pointer-events:none}
+@media(max-width:860px){.story:before{display:none}}
+
+/* directional marks */
+.dm{display:inline-flex;align-items:center;gap:1px;vertical-align:middle}
+.dm svg{width:9px;height:13px;fill:none;stroke:var(--red);stroke-width:2.4;stroke-linecap:square;stroke-linejoin:miter;opacity:.25;animation:dmrun 1.5s ease-in-out infinite;animation-delay:calc(var(--i)*.18s)}
+.dm.left{transform:scaleX(-1)}.dm.down{transform:rotate(90deg)}.dm.up{transform:rotate(-90deg)}
+@keyframes dmrun{0%,100%{opacity:.2;translate:-2px 0}40%{opacity:1;translate:2px 0}}
+.dm em{font:800 9px var(--body);letter-spacing:.2em;color:var(--red);margin-left:6px;font-style:normal}
+.card-dm{position:absolute;left:10px;bottom:26px;z-index:2;pointer-events:none}
+.gal-dm{position:absolute;right:12px;bottom:12px;z-index:3}
+.note .dm{margin-right:6px}
+.eyebrow:after{content:"››";color:var(--red);font-weight:900;letter-spacing:-.05em;margin-left:-4px}
+.pdp-price:before{content:"▸";color:var(--red);font-size:12px;margin-right:-6px;align-self:center}
+
+/* product card: hover photography */
+.p-img img.i2{opacity:0;transition:opacity .55s var(--ease),transform var(--t) var(--ease)}
+@media(hover:hover){.card:hover .p-img.has-alt img.i2{opacity:1}.card:hover .p-img.has-alt img.i1{opacity:0}.p-img img.i1{transition:opacity .55s var(--ease),transform var(--t) var(--ease)}}
+
+/* mobile only: last photo again before the details (transparent PNG on a red glow) */
+.pdp-last{display:none}
+@media(max-width:860px){
+ .pdp-last{display:block;position:relative;aspect-ratio:1/1;margin:34px 0 26px;overflow:hidden;border:1px solid var(--line);background:#161617}
+ .pdp-last .pl-g{position:absolute;inset:-10%;background:radial-gradient(circle at 50% 56%,rgba(215,38,43,.85) 0,rgba(215,38,43,.38) 30%,rgba(215,38,43,0) 62%);animation:glow 4.5s ease-in-out infinite}
+ .pdp-last .pl-k{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);font:900 74cqw/1 var(--jp);color:rgba(10,10,11,.5);z-index:1;pointer-events:none}
+ .pdp-last{container-type:inline-size}
+ .pdp-last img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8%;z-index:2;filter:drop-shadow(0 26px 22px rgba(0,0,0,.55));animation:floaty 6.5s ease-in-out infinite}
+ .pl-dm{position:absolute;left:12px;bottom:12px;z-index:3}
+ .pl-t{position:absolute;right:12px;bottom:12px;z-index:3;font:800 9px var(--body);letter-spacing:.22em;text-transform:uppercase;color:#fff;opacity:.85}
+}
+@keyframes glow{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+
+/* large image block */
+.bigimg{position:relative;padding:clamp(40px,6vw,90px) var(--pad);display:flex;flex-direction:column;align-items:center}
+.bigimg .bi-in{display:block;position:relative;width:100%;max-width:min(1100px,100%);transition:transform .6s var(--ease)}
+.bigimg.contain .bi-in{max-width:min(860px,100%)}
+.bigimg img{display:block;width:100%;height:auto}
+.bigimg.cover{padding-left:0;padding-right:0}.bigimg.cover .bi-in{max-width:none}.bigimg.cover img{max-height:78vh;object-fit:cover}
+a.bi-in:hover{transform:scale(1.012)}
+.bi-in:before,.bi-in:after{content:"";position:absolute;width:34px;height:34px;pointer-events:none;z-index:2}
+.bi-in:before{left:-8px;top:-8px;border-left:3px solid var(--red);border-top:3px solid var(--red)}
+.bi-in:after{right:-8px;bottom:-8px;border-right:3px solid var(--red);border-bottom:3px solid var(--red)}
+.bi-cap{margin-top:18px;font:800 11px var(--body);letter-spacing:.24em;text-transform:uppercase;color:var(--concrete)}
+.bi-dm{position:absolute;top:50%}.bi-dm.l{left:calc(var(--pad)/2 - 10px)}.bi-dm.r{right:calc(var(--pad)/2 - 10px)}
+@media(max-width:700px){.bi-dm{display:none}}
+
+/* Why Taeken */
+.why{position:relative;background:var(--bg2)}
+.why-grid{list-style:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:1px solid var(--line)}
+.why-grid li{position:relative;overflow:hidden;padding:30px 22px 34px;border-right:1px solid var(--line);transition:background .35s var(--ease),transform .35s var(--ease)}
+.why-grid li:last-child{border-right:0}
+.why-grid li:hover{background:#202022}
+.why-k{position:absolute;right:-6px;bottom:-14px;font:900 120px/1 var(--jp);color:rgba(245,243,238,.045);pointer-events:none;transition:color .3s,transform .5s var(--ease)}
+.why-grid li:hover .why-k{color:rgba(215,38,43,.2);transform:translate(-6px,-6px)}
+.why-n{display:block;font:800 10px var(--body);letter-spacing:.28em;color:var(--red);margin-bottom:22px}
+.why-i svg{width:30px;height:30px;fill:none;stroke:var(--chalk);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;margin-bottom:16px;display:block}
+.why-grid h3{font:400 22px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;position:relative}
+.why-grid p{font-size:13.5px;line-height:1.6;color:#b9b7b1;position:relative}
+.why-cta{margin-top:34px;display:flex;justify-content:center}.why-cta .btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+@media(max-width:1000px){.why-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.why-grid li{border-bottom:1px solid var(--line)}.why-grid li:nth-child(2n){border-right:0}.why-grid li:last-child{grid-column:1/-1;border-bottom:0}}
+@media(max-width:480px){.why-grid{grid-template-columns:1fr}.why-grid li{border-right:0;padding:24px 20px}}
+
+/* footer track */
+.f-track{max-width:1320px;margin:0 auto 40px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:20px;border:1px solid var(--line);border-left:3px solid var(--red);background:rgba(245,243,238,.03)}
+.f-track>div{flex:1 1 220px}.f-track b{display:block;font:400 20px var(--display);letter-spacing:.08em;text-transform:uppercase}.f-track small{color:var(--concrete);font-size:12px}
+.f-track input{flex:1 1 180px;min-width:0;background:#121213;border:1px solid #55555a;color:var(--chalk);padding:13px 14px;font:600 15px var(--body)}
+.f-track input:focus{outline:0;border-color:var(--red)}
+.f-track .btn{padding:13px 22px;font-size:16px}.f-track .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+@media(max-width:600px){.f-track{padding:16px;margin:0 0 32px}.f-track .btn{width:100%;justify-content:center}}

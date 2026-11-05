@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=Permanent+Marker&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&text=%E3%82%8A%E3%82%A4%E3%82%B1%E3%83%86%E3%83%B3%E4%BD%8E%E5%8E%9A%E5%8F%A4%E5%AD%90%E5%B1%8B%E5%BD%A2%E6%B1%BA%E7%89%A9%E8%A1%97%E8%AA%9E%E8%AA%AD%E8%B5%B0%E8%BE%BC%E8%BF%B7%E9%80%9F%E9%97%98%E9%AB%98%E9%AD%82&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@900&text=%E3%82%8A%E3%82%A4%E3%82%B1%E3%83%86%E3%83%B3%E4%BD%8E%E5%8E%9A%E5%8F%A4%E5%AD%90%E5%B1%8B%E5%BD%A2%E6%B1%BA%E7%89%A9%E8%A1%97%E8%AA%9E%E8%AA%AD%E8%B5%B0%E8%BE%BC%E8%BF%B7%E9%80%9F%E9%97%98%E9%AB%98%E9%AD%82%E3%81%AE%E5%9E%8B%E3%81%84&display=swap" rel="stylesheet" />
       </head>
       <body>{children}</body>
     </html>

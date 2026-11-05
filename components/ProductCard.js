@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useShop } from "./ShopProvider";
 import { inr, kanjiFor } from "@/lib/format";
 import { Arrow } from "./Media";
+import DM from "./DM";
 
 export const sizeList = (p) => Object.keys(p.sizes || {}).sort((a, b) => a - b);
 export const totalStock = (p) => Object.values(p.sizes || {}).reduce((t, n) => t + (Number(n) || 0), 0);
@@ -27,9 +28,10 @@ export default function ProductCard({ p, colorMap = {}, extra = false, inert = f
   return (
     <article ref={ref} className={"card" + (extra ? " extra" : "") + (sizing ? " sizing" : "")} style={{ "--i": index }} inert={inert ? "" : undefined}>
       <div className="p-visual" data-k={kanjiFor(p.slug)} data-n={String(index + 1).padStart(2, "0")}>
-        <Link className={"p-img" + (p.images?.[0] ? " has-img" : "")} href={`/products/${p.slug}`} aria-label={`${p.name}, ${inr(p.price)}`}>
-          {p.images?.[0] ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" /> : <span className="corners" />}
+        <Link className={"p-img" + (p.images?.[0] ? " has-img" : "") + (p.images?.[1] ? " has-alt" : "")} href={`/products/${p.slug}`} aria-label={`${p.name}, ${inr(p.price)}`}>
+          {p.images?.[0] ? <><img className="i1" src={p.images[0]} alt={p.name} loading="lazy" decoding="async" />{p.images[1] && <img className="i2" src={p.images[1]} alt="" aria-hidden="true" loading="lazy" decoding="async" />}</> : <span className="corners" />}
         </Link>
+        <DM className="card-dm" n={2} />
         {p.tagObjs?.length > 0 && <div className="tags">{p.tagObjs.slice(0, 2).map((t) => <span key={t.slug} className="tag" style={{ background: t.bg, color: t.fg }}>{t.name}</span>)}</div>}
         <button className="heart" aria-pressed={saved} aria-label={`${saved ? "Remove" : "Save"} ${p.name} ${saved ? "from" : "to"} wishlist`} onClick={() => toggleWish(p)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg>

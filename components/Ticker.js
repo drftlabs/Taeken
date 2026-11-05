@@ -6,8 +6,11 @@ function Set({ items, hidden }) {
   );
 }
 // Always-on announcement strip (edit lines in Admin → Settings)
-export default function Ticker({ items }) {
-  const list = items?.length ? items : ["Make your mark"];
+import { inr } from "@/lib/format";
+export default function Ticker({ items, freeMin }) {
+  let list = items?.length ? items : ["Make your mark"];
+  // the free-shipping line always follows the Settings value, so it can never be out of date
+  if (Number(freeMin) > 0) list = list.map((t) => (/free shipping/i.test(t) ? t.replace(/₹\s?[\d,]+/, inr(freeMin)) : t));
   return (
     <div className="ticker" aria-label="Announcements"><div className="tk-track"><Set items={list} /><Set items={list} hidden /></div></div>
   );

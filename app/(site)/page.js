@@ -1,12 +1,16 @@
 import { getBlocks, getSlides, getCollections, getProducts, getColors, inCollection } from "@/lib/data";
 import Tape from "@/components/Tape";
-import { HeroBlock, ProductsBlock, BannerBlock, CollectionsBlock, StoryBlock } from "@/components/HomeBlocks";
+import { HeroBlock, ProductsBlock, BannerBlock, CollectionsBlock, StoryBlock, ImageBlock } from "@/components/HomeBlocks";
+import WhyTaeken from "@/components/WhyTaeken";
+import { getSettings } from "@/lib/data";
+import { shippingCfg } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const [blocks, slides, collections, colors] = await Promise.all([getBlocks(), getSlides(), getCollections(), getColors()]);
   const all = await getProducts();
+  const settings = await getSettings();
   const bySlug = Object.fromEntries(collections.map((c) => [c.slug, c]));
   const productsFor = (c) => {
     let list = all;
@@ -23,7 +27,8 @@ export default async function Home() {
           case "products": return <div key={b.id}><ProductsBlock c={{ ...c, title: c.title || b.title }} products={productsFor(c)} colors={colors} /><Tape /></div>;
           case "banner": return <BannerBlock key={b.id} c={{ ...c, title: c.title || b.title }} />;
           case "collections": return <div key={b.id}><CollectionsBlock c={c} collections={collections} /><Tape light /></div>;
-          case "story": return <StoryBlock key={b.id} c={c} />;
+          case "image": return <ImageBlock key={b.id} c={{ ...c, title: c.title || b.title }} />;
+          case "story": return <div key={b.id}><StoryBlock c={c} /><WhyTaeken cfg={shippingCfg(settings)} settings={settings} /></div>;
           default: return null;
         }
       })}

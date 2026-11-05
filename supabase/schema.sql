@@ -102,7 +102,7 @@ create table if not exists public.slides (        -- hero slider
 
 create table if not exists public.blocks (        -- homepage sections: order + on/off + content
   id uuid primary key default gen_random_uuid(),
-  type text not null check (type in ('hero','products','banner','collections','story')),
+  type text not null check (type in ('hero','products','banner','collections','story','image')),
   title text not null default '',                   -- admin label
   enabled boolean not null default true,
   sort_order int not null default 0,
@@ -296,3 +296,10 @@ insert into public.site_settings(key,value) values
  ('delivery_days','"3–4 business days"'::jsonb),
  ('ticker','["Free shipping above ₹1,499", "Drop 01 is live", "Make your mark", "街 Street series 001"]'::jsonb)
 on conflict (key) do update set value=excluded.value, updated_at=now();
+
+-- Taeken migration 5: "Large image" homepage block (placed right after the products row). Safe to run more than once.
+alter table public.blocks drop constraint if exists blocks_type_check;
+alter table public.blocks add constraint blocks_type_check check (type in ('hero','products','banner','collections','story','image'));
+insert into public.blocks(type, title, enabled, sort_order, config)
+select 'image','Large image',true,25,'{"image":"","image_mobile":"","fit":"contain","caption":"","link":"","alt":""}'::jsonb
+where not exists (select 1 from public.blocks where type='image');

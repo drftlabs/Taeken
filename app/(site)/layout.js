@@ -19,7 +19,7 @@ export default async function SiteLayout({ children }) {
       <div className="rail" aria-hidden="true"><span>TAEKEN ◆ 街の闘い ◆ MAKE YOUR MARK ◆ INDIA</span></div>
       <a className="skip" href="#main">Skip to content</a>
       <PageGuard />
-      <Header ticker={<Ticker items={settings.ticker} />} />
+      <Header ticker={<Ticker items={settings.ticker} freeMin={settings.free_shipping_min} />} />
       <main id="main">{children}</main>
       <TrustBar s={settings} />
       <Footer settings={settings} collections={collections} />

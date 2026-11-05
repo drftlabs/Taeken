@@ -1,6 +1,7 @@
 import Hero from "./Hero";
 import ProductGrid from "./ProductGrid";
 import { Media, SmartLink, Arrow, lines } from "./Media";
+import DM from "./DM";
 
 function Head({ t }) {
   const parts = String(t || "").split("|");
@@ -13,7 +14,7 @@ export function ProductsBlock({ c, products, colors }) {
       <div className="wrap">
         <div className="sec-head">
           <div><p className="eyebrow">{c.eyebrow}</p><h2 className="h2"><Head t={c.title} /></h2></div>
-          <span className="note"><b>{products.length}</b> pairs</span>
+          <span className="note"><DM n={3} /> <b>{products.length}</b> pairs</span>
         </div>
         <ProductGrid products={products} colors={colors} collapse={c.collapse !== false} />
       </div>
@@ -79,3 +80,16 @@ export function StoryBlock({ c }) {
 }
 
 export function HeroBlock({ slides }) { return <Hero slides={slides} />; }
+
+// Large full-width picture. Any shape: "contain" shows the whole image (e.g. 1:1), "cover" fills the strip.
+export function ImageBlock({ c }) {
+  if (!c.image) return null;
+  const img = <picture>{c.image_mobile && <source media="(max-width:600px)" srcSet={c.image_mobile} />}<img src={c.image} alt={c.alt || c.title || ""} loading="lazy" decoding="async" /></picture>;
+  return (
+    <section className={"bigimg " + (c.fit === "cover" ? "cover" : "contain")} aria-label={c.title || "Featured image"}>
+      <DM className="bi-dm l" dir="right" n={3} /><DM className="bi-dm r" dir="left" n={3} />
+      {c.link ? <SmartLink href={c.link} className="bi-in">{img}</SmartLink> : <div className="bi-in">{img}</div>}
+      {c.caption && <p className="bi-cap"><span>{c.caption}</span></p>}
+    </section>
+  );
+}

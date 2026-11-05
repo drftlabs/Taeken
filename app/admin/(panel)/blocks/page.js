@@ -15,6 +15,11 @@ const fieldsByType = {
     { name: "config.title", label: "Headline", type: "text", help: "Use | for a line break." }, { name: "config.cta_text", label: "Button text", type: "text" }, { name: "config.link", label: "Button link", type: "text" },
     { name: "config.image", label: "Desktop image", type: "image", folder: "banners", hint: "Wide, about 2400×1200px.", full: true },
     { name: "config.image_mobile", label: "Mobile image (optional)", type: "image", folder: "banners", full: true }, { name: "config.fit", label: "Image fit", type: "select", options: [["cover", "Fill the banner (crops edges)"], ["contain", "Show the whole image (good for 1:1 / square)"]] }, { name: "config.position", label: "Image focus", type: "text" }],
+  image: [...base,
+    { name: "config.image", label: "Large image", type: "image", folder: "banners", hint: "Any size or shape. Use 1:1 or wide, it will fit.", full: true },
+    { name: "config.image_mobile", label: "Mobile image (optional)", type: "image", folder: "banners", full: true },
+    { name: "config.fit", label: "Image fit", type: "select", options: [["contain", "Show the whole image (good for 1:1 / any shape)"], ["cover", "Fill a wide strip (crops edges)"]] },
+    { name: "config.caption", label: "Caption (optional)", type: "text" }, { name: "config.link", label: "Link when tapped (optional)", type: "text" }, { name: "config.alt", label: "Image description (for accessibility)", type: "text" }],
   collections: [...base, { name: "config.eyebrow", label: "Small heading", type: "text" }, { name: "config.title", label: "Heading", type: "text" }, { name: "__note", label: "", type: "text" }],
   story: [...base,
     { name: "config.eyebrow", label: "Small heading", type: "text" }, { name: "config.title", label: "Heading", type: "text", help: "Use | for a line break." },
@@ -27,5 +32,5 @@ export default async function Page() {
   const { data } = await serviceClient().from("blocks").select("*").order("sort_order");
   return <><h1>Block placement</h1><p className="sub">Control the homepage layout. Use ▲▼ to place each block higher or lower, switch blocks on/off, and edit their text and images. You can add extra product rows (for example a “Bestsellers” strip filtered by tag) or more banners.</p>
     <ResourceManager table="blocks" rows={data || []} fieldsByType={fieldsByType} sortable titleKey="title"
-      newTypes={[["products", "Product row"], ["banner", "Banner"], ["collections", "Collections tiles"], ["story", "Story"], ["hero", "Hero slider"]]} blank={{ enabled: true }} /></>;
+      newTypes={[["products", "Product row"], ["banner", "Banner"], ["image", "Large image"], ["collections", "Collections tiles"], ["story", "Story"], ["hero", "Hero slider"]]} blank={{ enabled: true }} /></>;
 }

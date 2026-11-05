@@ -8,6 +8,7 @@ import PinCheck from "@/components/PinCheck";
 import Prose from "@/components/Prose";
 import { shippingCfg } from "@/lib/pricing";
 import Reveal from "@/components/Reveal";
+import DM from "@/components/DM";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import { inr, SITE_URL, kanjiPair } from "@/lib/format";
 
@@ -32,13 +33,18 @@ export default async function ProductPage({ params }) {
   const details = String(p.details || "").split("\n").map((l) => l.trim()).filter(Boolean);
   const ld = { "@context": "https://schema.org", "@type": "Product", name: p.name, image: p.images, description: p.description || p.name, brand: { "@type": "Brand", name: "Taeken" }, ...(p.sku ? { sku: p.sku } : {}), offers: { "@type": "Offer", priceCurrency: "INR", price: p.price, availability: sizeKeys.some((s) => p.sizes[s] > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${SITE_URL}/products/${p.slug}` } };
   return (
-    <div className="page has-sticky">
+    <div className="page has-sticky pdp-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <div className="wrap">
         <div className="crumbs"><Link href="/">Home</Link>{col && <Link href={`/collections/${col.slug}`}>{col.name}</Link>}<span>{p.name}</span></div>
         <div className="pdp pdp-in">
-          <Gallery images={p.images || []} name={p.name} kanji={kanjiPair(p.slug)} />
+          <div className="gal-col">
+            <Gallery images={p.images || []} name={p.name} kanji={kanjiPair(p.slug)} />
+            <span className="vtype vt-l" aria-hidden="true"><b>TAEKEN</b><i>走り屋</i><em>STREET SERIES 001</em></span>
+            <DM className="gal-dm" dir="down" n={3} />
+          </div>
           <div className="pdp-info">
+            <span className="vtype vt-r" aria-hidden="true"><i>魂</i><b>MAKE YOUR MARK</b><em>街の闘い</em></span>
             {p.tagObjs?.length > 0 && <div className="tags">{p.tagObjs.map((t) => <span key={t.slug} className="tag" style={{ background: t.bg, color: t.fg }}>{t.name}</span>)}</div>}
             <h1 className="pdp-name"><span>{p.name}</span></h1>
             <div className="pdp-price"><span>{inr(p.price)}</span>{p.compare_price > p.price && <s>{inr(p.compare_price)}</s>}</div>
@@ -52,6 +58,11 @@ export default async function ProductPage({ params }) {
               <li><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2M20 4v5h-5M4 20v-5h5" /></svg><b>{settings.return_days}-day returns</b><small>Plus {settings.exchange_days}-day size exchange</small></li>
               {cfg.codEnabled && <li><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1" /><circle cx="12" cy="12" r="2.5" /></svg><b>Cash on delivery</b><small>Pay just {cfg.codPct}% now</small></li>}
             </Reveal>
+            {p.images?.length > 0 && <Reveal className="pdp-last" delay={60}>
+              <span className="pl-k" aria-hidden="true">{kanjiPair(p.slug)[1]}</span><span className="pl-g" aria-hidden="true" />
+              <img src={p.images[p.images.length - 1]} alt={`${p.name}, final view`} loading="lazy" decoding="async" />
+              <DM className="pl-dm" n={3} /><span className="pl-t" aria-hidden="true">No.01 · {p.name}</span>
+            </Reveal>}
             <Reveal className="acc" delay={120}>
               <details open><summary>Details</summary><div className="body">{details.length ? <ul>{details.map((d, i) => <li key={i}>{d}</li>)}</ul> : <p>Distinctive design for everyday wear.</p>}</div></details>
               <details><summary>Shipping &amp; delivery</summary><div className="body"><p>Dispatched within {settings.dispatch_days}; delivered in {settings.delivery_days}. <Link className="link" href="/policies/shipping">Shipping policy</Link></p></div></details>
