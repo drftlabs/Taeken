@@ -317,7 +317,7 @@ footer{border-top:1px solid var(--line);padding:clamp(56px,7vw,100px) var(--pad)
 /* product card: kanji watermark + plate number + red slash */
 .p-visual:before{content:attr(data-k);position:absolute;right:-4%;bottom:-8%;font:900 clamp(120px,15vw,200px)/1 var(--jp);color:rgba(245,243,238,.045);pointer-events:none;transition:transform .5s var(--ease),color .3s}
 .card:hover .p-visual:before{transform:translate(-8px,-6px);color:rgba(215,38,43,.14)}
-.p-visual:after{content:"No." attr(data-n);position:absolute;left:10px;bottom:8px;font:800 9px var(--body);letter-spacing:.22em;color:var(--concrete);opacity:.7;pointer-events:none}
+
 .p-img img{filter:drop-shadow(0 16px 14px rgba(0,0,0,.5))}
 .card .p-name span{background-image:linear-gradient(var(--red),var(--red))}
 /* buttons: slash sweep */

@@ -14,6 +14,7 @@ export default async function Home() {
   const bySlug = Object.fromEntries(collections.map((c) => [c.slug, c]));
   const productsFor = (c) => {
     let list = all;
+    if (c.source === "pick") { const ids = Array.isArray(c.product_ids) ? c.product_ids : []; return ids.map((id) => all.find((p) => p.id === id)).filter(Boolean); }
     if (c.source === "tag" && c.source_value) list = list.filter((p) => (p.tags || []).includes(c.source_value));
     if (c.source === "collection" && c.source_value && bySlug[c.source_value]) list = list.filter((p) => inCollection(p, bySlug[c.source_value].id));
     return list.slice(0, Number(c.limit) || 12);

@@ -9,14 +9,16 @@ function Head({ t }) {
 }
 
 export function ProductsBlock({ c, products, colors }) {
+  // rows shown before the blurred "View all" (0 = show everything). Older blocks: the old checkbox decides.
+  const rows = c.rows !== undefined && c.rows !== "" ? Math.max(0, Math.floor(Number(c.rows)) || 0) : c.collapse === false ? 0 : 2;
   return (
     <section className="sec shop" id="shop" aria-label={c.title}>
       <div className="wrap">
         <div className="sec-head">
           <div><p className="eyebrow">{c.eyebrow}</p><h2 className="h2"><Head t={c.title} /></h2></div>
-          <span className="note"><DM n={3} /> <b>{products.length}</b> pairs</span>
+          <span className="note"><DM n={3} /></span>
         </div>
-        <ProductGrid products={products} colors={colors} collapse={c.collapse !== false} />
+        <ProductGrid products={products} colors={colors} collapse={rows > 0} rows={rows || 2} />
       </div>
     </section>
   );

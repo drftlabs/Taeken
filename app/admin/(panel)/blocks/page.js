@@ -2,13 +2,15 @@ import { serviceClient } from "@/lib/supabase/server";
 import ResourceManager from "@/components/admin/ResourceManager";
 
 const base = [{ name: "title", label: "Admin label", type: "text", help: "Only you see this." }, { name: "enabled", label: "Show on homepage", type: "checkbox" }];
-const fieldsByType = {
+const makeFields = (products) => ({
   hero: [...base],
   products: [...base,
     { name: "config.eyebrow", label: "Small heading", type: "text" }, { name: "config.title", label: "Heading", type: "text", help: "Use | for a line break; the last line is red." },
-    { name: "config.source", label: "Which products", type: "select", options: [["all", "All products"], ["tag", "Only a tag"], ["collection", "Only a collection"]] },
+    { name: "config.source", label: "Which products", type: "select", options: [["all", "All products"], ["tag", "Only a tag"], ["collection", "Only a collection"], ["pick", "Hand-picked: I choose which products and in what order"]] },
     { name: "config.source_value", label: "Tag or collection slug", type: "text", help: "e.g. new-drop or high-tops (needed if you chose Tag/Collection)" },
-    { name: "config.limit", label: "Max products", type: "number" }, { name: "config.collapse", label: "Show 2 rows + blurred “View all”", type: "checkbox" }],
+    { name: "config.product_ids", label: "Hand-picked products (used when “Which products” = Hand-picked)", type: "productpick", products, full: true },
+    { name: "config.limit", label: "Max products", type: "number", help: "Ignored for hand-picked." },
+    { name: "config.rows", label: "Rows shown before the blurred “View all”", type: "number", help: "Each row is 2 products on a phone (2 = a 2×2 grid), 4 on desktop. 0 = show all products, no “View all”." }],
   banner: [...base,
     { name: "config.variant", label: "Style", type: "select", options: [["campaign", "Campaign (text bottom-right)"], ["next", "Next drop (text bottom-left)"]] },
     { name: "config.plate", label: "Number plate", type: "text", help: "e.g. 001" }, { name: "config.kicker", label: "Small label", type: "text" },
@@ -25,11 +27,13 @@ const fieldsByType = {
     { name: "config.eyebrow", label: "Small heading", type: "text" }, { name: "config.title", label: "Heading", type: "text", help: "Use | for a line break." },
     { name: "config.text", label: "Paragraph", type: "textarea", full: true }, { name: "config.link_text", label: "Link text", type: "text" }, { name: "config.link", label: "Link", type: "text" },
     { name: "config.image", label: "Image", type: "image", folder: "story", full: true }, { name: "config.position", label: "Image focus", type: "text" }],
-};
-fieldsByType.collections = fieldsByType.collections.filter((f) => f.name !== "__note");
+});
 
 export default async function Page() {
-  const { data } = await serviceClient().from("blocks").select("*").order("sort_order");
+  const sb = serviceClient();
+  const [{ data }, { data: prods }] = await Promise.all([sb.from("blocks").select("*").order("sort_order"), sb.from("products").select("id,name,images,active").order("name")]);
+  const fieldsByType = makeFields((prods || []).map((p) => ({ id: p.id, name: p.name + (p.active ? "" : " (hidden)"), img: p.images?.[0] || "" })));
+  fieldsByType.collections = fieldsByType.collections.filter((f) => f.name !== "__note");
   return <><h1>Block placement</h1><p className="sub">Control the homepage layout. Use ▲▼ to place each block higher or lower, switch blocks on/off, and edit their text and images. You can add extra product rows (for example a “Bestsellers” strip filtered by tag) or more banners.</p>
     <ResourceManager table="blocks" rows={data || []} fieldsByType={fieldsByType} sortable titleKey="title"
       newTypes={[["products", "Product row"], ["banner", "Banner"], ["image", "Large image"], ["collections", "Collections tiles"], ["story", "Story"], ["hero", "Hero slider"]]} blank={{ enabled: true }} /></>;
