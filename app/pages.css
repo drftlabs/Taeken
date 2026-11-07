@@ -428,3 +428,28 @@ a.bi-in:hover{transform:scale(1.012)}
 .ok-it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.ok-it img,.ok-it i{width:54px;height:54px;object-fit:contain;background:#1b1b1d;flex:none}.ok-it div{flex:1;min-width:0}.ok-it b{display:block;font-size:14px}.ok-it span{font-size:12px;color:var(--concrete)}.ok-it em{font-style:normal;font-weight:800}
 .ok-to{padding-top:14px;display:grid;gap:2px}.ok-to span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--concrete)}.ok-to small{color:#cfcdc7;line-height:1.5}
 .ok-row.paid b{color:#7fd09a}
+
+/* payment cards: chips + WhatsApp OTP box */
+.pay-opt{position:relative}
+.pay-chip{position:absolute;right:12px;top:-11px;z-index:2;background:var(--bg);border:1px solid var(--chalk);padding:3px 10px;font:800 10px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--chalk);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 100%,0 100%)}
+.pay-chip.free{background:#1f6b3a;border-color:#1f6b3a;color:#fff}.pay-chip.cod{background:var(--red);border-color:var(--red);color:#fff}
+.otp{position:fixed;inset:0;z-index:2200;display:grid;place-items:center;padding:16px}
+.otp-scrim{position:absolute;inset:0;background:rgba(8,8,9,.88);backdrop-filter:blur(5px);animation:fade .25s both}
+.otp-box{position:relative;width:min(400px,100%);background:var(--bg);border:1px solid #4a4a4e;border-top:4px solid #25d366;padding:30px 24px 22px;text-align:center;animation:qcin .4s var(--ease) both;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.otp-x{position:absolute;right:8px;top:8px;width:40px;height:40px;display:grid;place-items:center;color:var(--concrete)}.otp-x svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none}
+.otp-wa{display:inline-grid;place-items:center;width:54px;height:54px;border-radius:50%;background:#25d366;color:#fff;margin-bottom:12px}.otp-wa svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:1.8}
+.otp-box h2{font:400 24px var(--display);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.otp-sub{font-size:14px;line-height:1.55;color:#cfcdc7;margin:6px 0}.otp-sub b{color:var(--chalk)}.otp-sub.bad{color:#ff8a8a}
+.otp-test{margin:8px 0;padding:8px;border:1px dashed var(--red);font-size:13px}.otp-test b{font-size:18px;letter-spacing:.2em;color:var(--red)}
+.otp-in{display:flex;gap:10px;justify-content:center;margin:18px 0 10px}
+.otp-in input{width:56px;height:64px;text-align:center;font:700 28px var(--body);background:#121213;border:2px solid #55555a;color:var(--chalk);caret-color:var(--red)}
+.otp-in input:focus{outline:0;border-color:#25d366}.otp-in input:disabled{opacity:.6}
+.otp-in.shake{animation:shake .45s}
+.otp-row{display:flex;justify-content:space-between;gap:12px;margin-top:10px}
+.otp-link{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--chalk);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--red)}.otp-link:disabled{opacity:.45;text-decoration:none}
+.otp-foot{margin-top:16px;font-size:11.5px;line-height:1.5;color:var(--concrete)}
+.otp-ok{display:grid;gap:8px;place-items:center;padding:20px 0}
+.otp-ok .tick{width:76px;height:76px;border-radius:50%;background:#25d366;display:grid;place-items:center;animation:pop .5s var(--ease)}.otp-ok .tick svg{width:40px;height:40px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;animation:draw .5s .15s ease both}
+@keyframes draw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+.otp-ok b{font:400 26px var(--display);letter-spacing:.08em;text-transform:uppercase;color:#7fd09a}.otp-ok small{color:var(--concrete)}
+@media(max-width:380px){.otp-in input{width:50px;height:58px}}
