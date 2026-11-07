@@ -15,7 +15,7 @@ export default async function Success({ searchParams }) {
   const settings = await getSettings(), cfg = shippingCfg(settings);
   const due = Math.max(0, parseInt(searchParams.due) || 0), total = Math.max(0, parseInt(searchParams.v) || 0);
   const o = String(searchParams.o || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 20);
-  const cod = searchParams.m === "cod" || due > 0;
+  const cod = searchParams.m === "cod" || due > 0, wa = searchParams.w === "1";
   const steps = [
     ["Confirmed", "We have your order and a confirmation email is on its way."],
     ["Packed", `Packed and handed to the courier within ${settings.dispatch_days || "1–2 business days"}.`],
@@ -34,14 +34,15 @@ export default async function Success({ searchParams }) {
         </div>
         <div className="ok-card">
           <div className="ok-row"><span>Order number</span><b className="ok-num">{o || "Check your email"}</b></div>
-          <div className="ok-row"><span>Payment type</span><b>{cod ? "Cash on delivery (part-paid online)" : "Paid online (Razorpay)"}</b></div>
+          <div className="ok-row"><span>Payment type</span><b>{cod ? (total > 0 && due >= total ? "Cash on delivery" : "Cash on delivery (part-paid online)") : "Paid online (Razorpay)"}</b></div>
+          {wa && <div className="ok-row paid"><span>Phone</span><b>✓ Verified on WhatsApp</b></div>}
           {total > 0 && <div className="ok-row"><span>Total order value</span><b>{inr(total)}</b></div>}
-          {total > 0 && <div className="ok-row paid"><span>Payment done</span><b>{inr(Math.max(0, total - due))}</b></div>}
+          {total > due && <div className="ok-row paid"><span>Payment done</span><b>{inr(Math.max(0, total - due))}</b></div>}
           <div className={"ok-row " + (due > 0 ? "cod" : "paid")}><span>{due > 0 ? "Pending: pay on delivery" : "Pending"}</span><b>{due > 0 ? inr(due) : "₹0, fully paid"}</b></div>
           <div className="ok-row"><span>Estimated delivery</span><b>{etaRange(cfg.etaMin, cfg.etaMax)}</b></div>
         </div>
         <OrderSummary order={o} />
-        {cod && due > 0 && <p className="ok-note">{total > due ? "Your advance is paid. " : ""}Please keep <b>{inr(due)}</b> ready for the delivery partner. Our team may call or WhatsApp to confirm your address.</p>}
+        {cod && due > 0 && <p className="ok-note">{total > due ? "Your advance is paid. " : ""}Please keep <b>{inr(due)}</b> ready for the delivery partner. We will call you only if the address needs a quick check.</p>}
         <ol className="ok-steps">{steps.map(([t, d], i) => <li key={t} className={i === 0 ? "on" : ""}><i>{i + 1}</i><div><b>{t}</b><span>{d}</span></div></li>)}</ol>
         <div className="ok-actions">
           {o && <TrackOpen className="btn" order={o}>Track this order <Arrow /></TrackOpen>}

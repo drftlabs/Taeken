@@ -1,4 +1,5 @@
 "use client";
+import { ping } from "@/lib/analytics";
 import { track } from "@/lib/track";
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 
@@ -56,6 +57,7 @@ export default function ShopProvider({ children, shipping }) {
   // add(product, size, qty, silent, colour {slug,name}, element-to-fly-from)
   const add = (p, size, qty = 1, silent = false, color = null, from = null) => {
     const cs = color?.slug || "";
+    ping({ t: "cart", path: typeof location !== "undefined" ? location.pathname : "/" });
     track("AddToCart", { content_ids: [p.id], content_name: p.name, content_type: "product", value: p.price * qty, currency: "INR" });
     setItems((cur) => {
       const f = cur.find((i) => same(i, p.id, size, cs));

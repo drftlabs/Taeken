@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useShop } from "./ShopProvider";
 import { inr, STATES, etaRange } from "@/lib/format";
 import { track } from "@/lib/track";
+import { ping, ids } from "@/lib/analytics";
 import { priceOrder } from "@/lib/pricing";
 import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
@@ -58,6 +59,15 @@ export default function CheckoutForm({ modal = false, onClose }) {
 
   const fired = useRef(false);
   useEffect(() => { if (ready && items.length && !fired.current) { fired.current = true; track("InitiateCheckout", { content_ids: items.map((i) => i.id), num_items: items.reduce((t, i) => t + i.qty, 0), value: subtotal, currency: "INR" }); } }, [ready, items.length]); // eslint-disable-line
+
+  const sentCo = useRef(false);
+  useEffect(() => { if (ready && items.length && !sentCo.current) { sentCo.current = true; ping({ t: "checkout", path: "/checkout" }); } }, [ready, items.length]); // eslint-disable-line
+  // once a valid email is typed, remember the bag so we can follow up if they leave (abandoned cart)
+  useEffect(() => {
+    if (!ready || !items.length || !/^\S+@\S+\.\S+$/.test(f.email)) return;
+    const t = setTimeout(() => { try { fetch("/api/cart/capture", { method: "POST", keepalive: true, headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ sid: ids().sid, email: f.email, name: f.name, phone: f.phone, city: f.city, state: f.state, pin: f.pin, items: items.map((i) => ({ id: i.id, name: i.name, size: i.size, qty: i.qty, price: i.price, image: i.image, color: i.colorName || i.color })) }) }).catch(() => {}); } catch {} }, 1500);
+    return () => clearTimeout(t);
+  }, [ready, items, f.email, f.name, f.phone, f.pin]); // eslint-disable-line
 
   if (ready && !items.length) return <div className="center"><h1 className="page-title">Your bag is <em>empty</em></h1><p className="lead">Pick a pair first.</p><Link className="btn" href="/collections/all" onClick={onClose}>Shop the collection <Arrow /></Link></div>;
 
