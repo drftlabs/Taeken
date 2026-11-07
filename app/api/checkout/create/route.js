@@ -1,4 +1,3 @@
-import { normalizePhone, checkToken } from "@/lib/otp";
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { serviceClient, sessionClient } from "@/lib/supabase/server";
@@ -52,22 +51,13 @@ export async function POST(req) {
   }
   const price = priceOrder({ subtotal, method, cfg, discount: rule });
 
-  // Pure COD (no advance paid online): the customer must have confirmed their phone with the WhatsApp code
-  let phoneVerified = false;
-  if (process.env.NEXT_PUBLIC_COD_OTP === "1" && method === "cod" && price.payNow === 0) {
-    const np = normalizePhone(customer.phone);
-    if (!np || !checkToken(body.otpToken, np)) return NextResponse.json({ error: "Please confirm your phone number with the WhatsApp code to place this COD order.", needOtp: true }, { status: 403 });
-    phoneVerified = true;
-  }
 
   let userId = null;
   try { const ses = sessionClient(); const { data: { user } } = await ses.auth.getUser(); userId = user?.id || null; } catch {}
 
   const base = { user_id: userId, email: customer.email, phone: customer.phone, name: customer.name, shipping_address: address, items, subtotal, shipping: price.shipping, total: price.total, status: "pending_payment" };
   const extra = { payment_method: method, amount_due: price.due, discount: price.discount, discount_code: price.discount ? rule.code : null };
-  const withV = phoneVerified ? { ...extra, phone_verified: true } : extra;
-  let { data: order, error } = await sb.from("orders").insert({ ...base, ...withV }).select().single();
-  if (error?.code === "42703" && phoneVerified) ({ data: order, error } = await sb.from("orders").insert({ ...base, ...extra }).select().single());   // migration_6 not run yet
+  let { data: order, error } = await sb.from("orders").insert({ ...base, ...extra }).select().single();
   if (error?.code === "42703" && method === "online" && !price.discount) ({ data: order, error } = await sb.from("orders").insert(base).select().single()); // migration_2 not run yet
   if (error) return NextResponse.json({ error: error.code === "42703" ? "Store setup is incomplete (run migration_2.sql in Supabase)." : "Could not create your order. Please try again." }, { status: 500 });
 
