@@ -5,10 +5,6 @@ import { useRouter } from "next/navigation";
 import { useShop } from "./ShopProvider";
 import { inr, STATES, etaRange } from "@/lib/format";
 import { track } from "@/lib/track";
-import WhatsAppOtp from "./WhatsAppOtp";
-
-// WhatsApp code for pure-COD orders is switched OFF for now. To turn it on later: set NEXT_PUBLIC_COD_OTP=1 in Vercel (needs the WhatsApp Business API, see WHATSAPP_SETUP.md).
-const OTP_ON = process.env.NEXT_PUBLIC_COD_OTP === "1";
 import { priceOrder } from "@/lib/pricing";
 import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
@@ -28,7 +24,6 @@ export default function CheckoutForm({ modal = false, onClose }) {
   const [method, setMethod] = useState("online"), [code, setCode] = useState(""), [rule, setRule] = useState(null), [codeMsg, setCodeMsg] = useState(null);
   const [busy, setBusy] = useState(false), [err, setErr] = useState("");
   const lastPin = useRef(""), [eta, setEta] = useState("");
-  const [otpOpen, setOtpOpen] = useState(false), tok = useRef({ phone: "", token: "" });
   useEffect(() => { setEta(etaRange(cfg.etaMin || 3, cfg.etaMax || 4)); }, [cfg.etaMin, cfg.etaMax]);
 
   // remember details on this device so the next order is one tap
@@ -66,24 +61,21 @@ export default function CheckoutForm({ modal = false, onClose }) {
 
   if (ready && !items.length) return <div className="center"><h1 className="page-title">Your bag is <em>empty</em></h1><p className="lead">Pick a pair first.</p><Link className="btn" href="/collections/all" onClick={onClose}>Shop the collection <Arrow /></Link></div>;
 
-  async function pay(e, tokenNow) {
-    e?.preventDefault(); setErr("");
+  async function pay(e) {
+    e.preventDefault(); setErr("");
     if (!contactOk) return setErr("Please check your name, email and 10-digit phone number.");
     if (!addrOk) return setErr("Please complete your delivery address.");
-    // pure COD (no advance): confirm the phone on WhatsApp first; the box places the order by itself once the code is right
-    const pk = f.phone.replace(/\D/g, "").slice(-10), needOtp = OTP_ON && method === "cod" && price.payNow === 0;
-    if (needOtp && !tokenNow && tok.current.phone !== pk) { setOtpOpen(true); return; }
     setBusy(true); track("AddPaymentInfo", { value: price.total, currency: "INR" });
     const done = (num, due, total) => {
       try { sessionStorage.setItem("tk_last", JSON.stringify({ o: num, total, due, method, name: f.name, addr: [f.line1, f.line2, f.area, f.city, f.state, f.pin].filter(Boolean).join(", "), items: items.map((i) => ({ n: i.name, s: i.size, c: i.colorName || "", q: i.qty, p: i.price, img: i.image })) })); } catch {}
-      clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}${needOtp ? "&w=1" : ""}`); };
+      clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}`); };
     try {
-      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, otpToken: tokenNow || (tok.current.phone === pk ? tok.current.token : ""), code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
-      const d = await r.json(); if (!r.ok) { if (d.needOtp) tok.current = { phone: "", token: "" }; throw new Error(d.error || "Could not start payment"); }
+      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
+      const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not start payment");
       if (d.cod) return done(d.orderNumber, d.due, d.total);
       await loadRzp();
       const rz = new window.Razorpay({
-        key: d.key, amount: d.amount, currency: "INR", name: "Taeken", description: d.method === "cod" ? `Order ${d.orderNumber}: 10% advance (COD)` : `Order ${d.orderNumber}`, order_id: d.rzpOrderId,
+        key: d.key, amount: d.amount, currency: "INR", name: "Taeken", description: d.method === "cod" ? `Order ${d.orderNumber}: ${cfg.codPct}% advance (COD)` : `Order ${d.orderNumber}`, order_id: d.rzpOrderId,
         prefill: { name: d.prefill.name, email: d.prefill.email, contact: d.prefill.phone }, theme: { color: "#D7262B" },
         modal: { ondismiss: () => { setBusy(false); setErr("Payment was not completed. Your bag is saved, so you can try again."); } },
         handler: async (resp) => {
@@ -95,12 +87,11 @@ export default function CheckoutForm({ modal = false, onClose }) {
       });
       rz.on("payment.failed", (x) => { setBusy(false); setErr(x.error?.description || "Payment failed. Please try again."); });
       rz.open();
-    } catch (x) { setErr(x.message); setBusy(false); setOtpOpen(false); }
+    } catch (x) { setErr(x.message); setBusy(false); }
   }
 
   return (
     <form className={"co2" + (modal ? " in-modal" : "")} onSubmit={pay} noValidate>
-      {OTP_ON && otpOpen && <WhatsAppOtp phone={f.phone} onClose={() => { setOtpOpen(false); setBusy(false); }} onVerified={(t) => { tok.current = { phone: f.phone.replace(/\D/g, "").slice(-10), token: t }; pay(null, t); }} />}
       <section className="co-step">
         <h2><i>01</i>Contact</h2>
         <div className="form">
@@ -173,7 +164,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
           </section>
 
           {err && <p className="msg-err" role="alert">{err}</p>}
-          <button className="btn co-pay" type="submit" disabled={busy}>{busy ? "Opening payment…" : method === "cod" ? (price.payNow ? <>Pay {inr(price.payNow)} now &amp; confirm COD <Arrow /></> : <>Place COD order <Arrow /></>) : <>Pay {inr(price.total)} <Arrow /></>}</button>
+          <button className="btn co-pay" type="submit" disabled={busy}>{busy ? (method === "cod" ? "Confirming your order…" : "Opening payment…") : method === "cod" ? (price.payNow ? <>Pay {inr(price.payNow)} now &amp; confirm COD <Arrow /></> : <>Confirm order <Arrow /></>) : <>Pay {inr(price.total)} <Arrow /></>}</button>
           <div className="secure-row"><span>🔒 Secure payment by Razorpay</span><span>↺ {cfg.returnDays}-day returns &amp; exchange</span><span>✓ Your card details never touch our server</span></div>
           <p className="secure">By ordering you agree to our <Link className="link" href="/policies/terms" style={{ fontSize: 12 }} onClick={onClose}>Terms</Link> and <Link className="link" href="/policies/returns" style={{ fontSize: 12 }} onClick={onClose}>Return Policy</Link>.</p>
         </>
