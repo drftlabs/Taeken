@@ -9,6 +9,7 @@ import { ping, ids } from "@/lib/analytics";
 import { priceOrder } from "@/lib/pricing";
 import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
+import WhatsAppOtp from "./WhatsAppOtp";
 
 function loadRzp() {
   return new Promise((res, rej) => {
@@ -23,7 +24,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
   const router = useRouter();
   const [f, setF] = useState(EMPTY), [areas, setAreas] = useState([]), [pinMsg, setPinMsg] = useState("");
   const [method, setMethod] = useState("online"), [code, setCode] = useState(""), [rule, setRule] = useState(null), [codeMsg, setCodeMsg] = useState(null);
-  const [busy, setBusy] = useState(false), [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false), [err, setErr] = useState(""), [otp, setOtp] = useState(false), otpTok = useRef("");
   const lastPin = useRef(""), [eta, setEta] = useState("");
   useEffect(() => { setEta(etaRange(cfg.etaMin || 3, cfg.etaMax || 4)); }, [cfg.etaMin, cfg.etaMax]);
 
@@ -60,6 +61,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
   const fired = useRef(false);
   useEffect(() => { if (ready && items.length && !fired.current) { fired.current = true; track("InitiateCheckout", { content_ids: items.map((i) => i.id), num_items: items.reduce((t, i) => t + i.qty, 0), value: subtotal, currency: "INR" }); } }, [ready, items.length]); // eslint-disable-line
 
+  useEffect(() => { otpTok.current = ""; }, [f.phone]);    // a WhatsApp check only counts for the number it was done on
   const sentCo = useRef(false);
   useEffect(() => { if (ready && items.length && !sentCo.current) { sentCo.current = true; ping({ t: "checkout", path: "/checkout" }); } }, [ready, items.length]); // eslint-disable-line
   // once a valid email is typed, remember the bag so we can follow up if they leave (abandoned cart)
@@ -71,17 +73,25 @@ export default function CheckoutForm({ modal = false, onClose }) {
 
   if (ready && !items.length) return <div className="center"><h1 className="page-title">Your bag is <em>empty</em></h1><p className="lead">Pick a pair first.</p><Link className="btn" href="/collections/all" onClick={onClose}>Shop the collection <Arrow /></Link></div>;
 
+  // pure COD (0% upfront) + the WhatsApp check switched on in Settings -> confirm the phone first
+  const needOtp = method === "cod" && price.payNow === 0 && !!cfg.codOtp;
   async function pay(e) {
     e.preventDefault(); setErr("");
     if (!contactOk) return setErr("Please check your name, email and 10-digit phone number.");
     if (!addrOk) return setErr("Please complete your delivery address.");
+    if (needOtp && !otpTok.current) { setOtp(true); return; }
+    place();
+  }
+  async function place() {
     setBusy(true); track("AddPaymentInfo", { value: price.total, currency: "INR" });
     const done = (num, due, total) => {
       try { sessionStorage.setItem("tk_last", JSON.stringify({ o: num, total, due, method, name: f.name, addr: [f.line1, f.line2, f.area, f.city, f.state, f.pin].filter(Boolean).join(", "), items: items.map((i) => ({ n: i.name, s: i.size, c: i.colorName || "", q: i.qty, p: i.price, img: i.image })) })); } catch {}
-      clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}`); };
+      clear(); onClose?.(); router.push(`/checkout/success?o=${encodeURIComponent(num)}${due ? `&due=${due}` : ""}${total ? `&v=${total}` : ""}&m=${method}${needOtp && otpTok.current ? "&w=1" : ""}`); };
     try {
-      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
-      const d = await r.json(); if (!r.ok) throw new Error(d.error || "Could not start payment");
+      const r = await fetch("/api/checkout/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: items.map((i) => ({ id: i.id, size: i.size, qty: i.qty, color: i.color || "" })), method, otpToken: needOtp ? otpTok.current : "", code: rule?.code || "", customer: { name: f.name, email: f.email, phone: f.phone }, address: { line1: f.line1, line2: f.line2, area: f.area, city: f.city, state: f.state, pin: f.pin } }) });
+      const d = await r.json();
+      if (d.needOtp) { otpTok.current = ""; setBusy(false); setOtp(true); return; }
+      if (!r.ok) throw new Error(d.error || "Could not start payment");
       if (d.cod) return done(d.orderNumber, d.due, d.total);
       await loadRzp();
       const rz = new window.Razorpay({
@@ -166,7 +176,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
                   <span className="dot" />
                   <span className="pt"><b>Cash on delivery</b>{cfg.codPct > 0
                     ? <small>Pay <b>{cfg.codPct}%</b> now ({inr(cod.payNow)}) to confirm your order, and the rest ({inr(cod.due)}) in cash when it arrives. A <b>{inr(cfg.codFee)} COD delivery fee</b> is added.</small>
-                    : <small>Pay in cash when it arrives. A <b>{inr(cfg.codFee)} COD delivery fee</b> is added.</small>}</span>
+                    : <small>Pay in cash when it arrives. A <b>{inr(cfg.codFee)} COD delivery fee</b> is added.{cfg.codOtp && " We confirm your number with a 4-digit WhatsApp code."}</small>}</span>
                   <span className="pa">{inr(cod.total)}</span>
                 </label>
               )}
@@ -180,6 +190,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
         </>
       )}
       {!addrOk && err && <p className="msg-err" role="alert">{err}</p>}
+      {otp && <WhatsAppOtp phone={f.phone} onClose={() => setOtp(false)} onVerified={(t) => { otpTok.current = t; setOtp(false); place(); }} />}
     </form>
   );
 }

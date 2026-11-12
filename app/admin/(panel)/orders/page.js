@@ -2,7 +2,7 @@ import Link from "next/link";
 import { serviceClient } from "@/lib/supabase/server";
 import TrackingImport from "@/components/admin/TrackingImport";
 import Row from "@/components/admin/Row";
-import { PayBadge, StageBadge, RepeatBadge } from "@/components/admin/Bits";
+import { PayBadge, StageBadge, RepeatBadge, Pill } from "@/components/admin/Bits";
 import { inr, dateFmt } from "@/lib/format";
 import { STAGE, repeatMap } from "@/lib/orderMeta";
 import { loadRepeatBase } from "@/lib/stats";
@@ -40,7 +40,7 @@ export default async function Orders({ searchParams }) {
         {(orders || []).map((o) => <Row key={o.id} href={`/admin/orders/${o.id}`}>
           <td><Link href={`/admin/orders/${o.id}`}><b>{o.order_number}</b></Link></td>
           <td className="mut">{dateFmt(o.created_at)}</td>
-          <td>{o.name}<br /><span className="mut">{o.email}</span><div style={{ marginTop: 4 }}><RepeatBadge r={rep.get(o.id)} /></div></td>
+          <td>{o.name}<br /><span className="mut">{o.email}</span><div style={{ marginTop: 4 }}><RepeatBadge r={rep.get(o.id)} />{o.phone_verified && <Pill tone="ok">✓ WhatsApp</Pill>}</div></td>
           <td>{(o.items || []).reduce((t, i) => t + i.qty, 0)}</td><td>{inr(o.total)}</td>
           <td><PayBadge o={o} /></td><td><StageBadge o={o} /></td><td className="mut">{o.tracking_number || "-"}</td></Row>)}
         {!orders?.length && <tr><td colSpan="8" className="mut">No orders found.</td></tr>}

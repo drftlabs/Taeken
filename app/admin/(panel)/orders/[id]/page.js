@@ -44,6 +44,7 @@ export default async function OrderPage({ params }) {
             {cod && <tr><td>Cash to collect</td><td><b>{inr(o.amount_due)}</b></td></tr>}
             <tr><td>Razorpay payment ID</td><td>{o.razorpay_payment_id && o.razorpay_payment_id !== "COD" ? <code>{o.razorpay_payment_id}</code> : <span className="mut">{cod && !o.razorpay_payment_id ? "-" : o.razorpay_payment_id || "-"}</span>}</td></tr>
             <tr><td>Razorpay order ID</td><td>{o.razorpay_order_id ? <code>{o.razorpay_order_id}</code> : <span className="mut">{cod ? "none (no online payment)" : "-"}</span>}</td></tr>
+            {o.phone_verified && <tr><td>Phone check</td><td><Pill tone="ok">✓ Verified on WhatsApp</Pill> <span className="mut">call only if the address looks wrong</span></td></tr>}
             {o.discount_code && <tr><td>Discount code</td><td><b>{o.discount_code}</b> <span className="mut">−{inr(o.discount)}</span></td></tr>}
           </tbody></table>
           <p style={{ marginTop: 12 }}>Subtotal {inr(o.subtotal)}<br />{o.discount > 0 && <>Discount {o.discount_code && `(${o.discount_code})`} −{inr(o.discount)}<br /></>}{cod ? "COD delivery fee" : "Shipping"} {o.shipping ? inr(o.shipping) : "Free"}<br /><b style={{ fontSize: 18 }}>Total {inr(o.total)}</b></p>

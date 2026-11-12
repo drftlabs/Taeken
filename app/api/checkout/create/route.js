@@ -4,6 +4,7 @@ import { serviceClient, sessionClient } from "@/lib/supabase/server";
 import { getSettings } from "@/lib/data";
 import { priceOrder, shippingCfg, checkDiscount } from "@/lib/pricing";
 import { markPaid } from "@/lib/orders";
+import { checkToken, normalizePhone } from "@/lib/otp";
 
 export const dynamic = "force-dynamic";
 const clean = (v, n = 200) => String(v ?? "").trim().slice(0, n);
@@ -52,14 +53,21 @@ export async function POST(req) {
   const price = priceOrder({ subtotal, method, cfg, discount: rule });
 
 
+  // pure COD with the WhatsApp check on: refuse unless this phone passed the code check (token is signed + expires)
+  let verified = false;
+  if (method === "cod" && price.payNow === 0 && cfg.codOtp) {
+    if (!checkToken(body.otpToken, normalizePhone(customer.phone))) return NextResponse.json({ error: "Please confirm your phone number on WhatsApp.", needOtp: true }, { status: 403 });
+    verified = true;
+  }
+
   let userId = null;
   try { const ses = sessionClient(); const { data: { user } } = await ses.auth.getUser(); userId = user?.id || null; } catch {}
 
   const base = { user_id: userId, email: customer.email, phone: customer.phone, name: customer.name, shipping_address: address, items, subtotal, shipping: price.shipping, total: price.total, status: "pending_payment" };
-  const extra = { payment_method: method, amount_due: price.due, discount: price.discount, discount_code: price.discount ? rule.code : null };
+  const extra = { payment_method: method, amount_due: price.due, discount: price.discount, discount_code: price.discount ? rule.code : null, ...(verified ? { phone_verified: true } : {}) };
   let { data: order, error } = await sb.from("orders").insert({ ...base, ...extra }).select().single();
   if (error?.code === "42703" && method === "online" && !price.discount) ({ data: order, error } = await sb.from("orders").insert(base).select().single()); // migration_2 not run yet
-  if (error) return NextResponse.json({ error: error.code === "42703" ? "Store setup is incomplete (run migration_2.sql in Supabase)." : "Could not create your order. Please try again." }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.code === "42703" ? verified ? "Store setup is incomplete (run migration_6.sql in Supabase)." : "Store setup is incomplete (run migration_2.sql in Supabase)." : "Could not create your order. Please try again." }, { status: 500 });
 
   // COD with 0% upfront: no online payment at all
   if (price.payNow === 0) {
