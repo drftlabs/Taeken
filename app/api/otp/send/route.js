@@ -20,10 +20,13 @@ export async function POST(req) {
   if (!test && (!process.env.WHATSAPP_TOKEN || !process.env.WHATSAPP_PHONE_ID)) return NextResponse.json({ error: "WhatsApp confirmation isn't set up yet. Please choose another payment option." }, { status: 503 });
 
   const code = newCode();
-  const { error } = await sb.from("otp_codes").insert({ phone, ip, code_hash: hashCode(phone, code), expires_at: new Date(now + 10 * 60 * 1000).toISOString() });
-  if (error) return NextResponse.json({ error: "Could not create a code. Please try again." }, { status: 500 });
+  const { data: row, error } = await sb.from("otp_codes").insert({ phone, ip, code_hash: hashCode(phone, code), expires_at: new Date(now + 10 * 60 * 1000).toISOString() }).select("id").single();
+  if (error || !row) return NextResponse.json({ error: "Could not create a code. Please try again." }, { status: 500 });
   if (test) return NextResponse.json({ sent: true, testCode: code });
   const r = await sendWhatsAppCode(phone, code);
-  if (!r.ok) return NextResponse.json({ error: "We couldn't send the WhatsApp code. Check the number has WhatsApp, or choose another payment option." }, { status: 502 });
+  if (!r.ok) {
+    await sb.from("otp_codes").delete().eq("id", row.id);      // a failed send must not lock the customer out of trying again
+    return NextResponse.json({ error: "We couldn't send the WhatsApp code. Check the number has WhatsApp, or choose another payment option.", ref: r.code ? `WA-${r.code}` : r.network ? "WA-NET" : `WA-${r.status || "ERR"}` }, { status: 502 });
+  }
   return NextResponse.json({ sent: true });
 }

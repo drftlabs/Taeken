@@ -3,14 +3,18 @@ import { serviceClient } from "@/lib/supabase/server";
 import { getAdminCtx } from "@/lib/admin";
 import SettingsForm from "@/components/admin/SettingsForm";
 import TeamManager from "@/components/admin/TeamManager";
+import WhatsAppTest from "@/components/admin/WhatsAppTest";
 import { SETTINGS } from "@/lib/fallback";
 
 export default async function Settings({ searchParams }) {
   const ctx = await getAdminCtx();
   const sb = serviceClient();
   const team = searchParams.tab === "team" && ctx?.isOwner;
+  const wa = searchParams.tab === "whatsapp" && ctx?.isOwner;
   let body;
-  if (team) {
+  if (wa) {
+    body = <><h1>WhatsApp check</h1><p className="sub">Test the WhatsApp code setup used for 0% COD orders.</p><WhatsAppTest /></>;
+  } else if (team) {
     const [{ data: roles, error: e1 }, { data: admins }] = await Promise.all([sb.from("admin_roles").select("*").order("name"), sb.from("admins").select("*").order("created_at")]);
     if (e1) body = <p className="flash err">Run <code>supabase/migration_7.sql</code> in Supabase → SQL Editor to turn on team users and roles.</p>;
     else {
@@ -25,7 +29,7 @@ export default async function Settings({ searchParams }) {
   }
   return (
     <>
-      {ctx?.isOwner && <div className="ap-tabs"><Link href="/admin/settings" className={!team ? "on" : ""}>Store settings</Link><Link href="/admin/settings?tab=team" className={team ? "on" : ""}>Team &amp; roles</Link></div>}
+      {ctx?.isOwner && <div className="ap-tabs"><Link href="/admin/settings" className={!team && !wa ? "on" : ""}>Store settings</Link><Link href="/admin/settings?tab=team" className={team ? "on" : ""}>Team &amp; roles</Link><Link href="/admin/settings?tab=whatsapp" className={wa ? "on" : ""}>WhatsApp check</Link></div>}
       {body}
     </>
   );

@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 // WhatsApp confirmation box: sends a 4-digit code, auto-submits when the 4th digit is entered, then hands back a signed token.
 export default function WhatsAppOtp({ phone, onVerified, onClose }) {
-  const [digits, setDigits] = useState(["", "", "", ""]), [msg, setMsg] = useState(""), [state, setState] = useState("sending"), [wait, setWait] = useState(0), [test, setTest] = useState(""), [shake, setShake] = useState(false);
+  const [digits, setDigits] = useState(["", "", "", ""]), [msg, setMsg] = useState(""), [state, setState] = useState("sending"), [wait, setWait] = useState(0), [ref, setRef] = useState(""), [test, setTest] = useState(""), [shake, setShake] = useState(false);
   const refs = [useRef(), useRef(), useRef(), useRef()], busy = useRef(false), started = useRef(false);
   const pretty = "+91 " + String(phone).replace(/\D/g, "").slice(-10).replace(/(\d{5})(\d{5})/, "$1 $2");
 
@@ -12,7 +12,7 @@ export default function WhatsAppOtp({ phone, onVerified, onClose }) {
     setState("sending"); setMsg(""); setDigits(["", "", "", ""]);
     try {
       const r = await fetch("/api/otp/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone }) });
-      const j = await r.json(); if (!r.ok) { setState("error"); setMsg(j.error || "Could not send the code."); return; }
+      const j = await r.json(); if (!r.ok) { setState("error"); setMsg(j.error || "Could not send the code."); setRef(j.ref || ""); return; }
       setTest(j.testCode || ""); setState("ready"); setWait(30); setTimeout(() => refs[0].current?.focus(), 80);
     } catch { setState("error"); setMsg("Network problem. Please try again."); }
   }
@@ -51,7 +51,7 @@ export default function WhatsAppOtp({ phone, onVerified, onClose }) {
             <span className="otp-wa" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" /><path d="M8.7 8.4c.3 2.6 2.6 5.3 6 6.3l1.3-1.4-1.9-1-.9.7c-.9-.4-1.8-1.3-2.2-2.2l.7-.9-1-1.9z" fill="currentColor" stroke="none" /></svg></span>
             <h2>WhatsApp confirmation</h2>
             {state === "sending" && <p className="otp-sub">Sending a code to WhatsApp {pretty}…</p>}
-            {state === "error" && <p className="otp-sub bad">{msg}</p>}
+            {state === "error" && <><p className="otp-sub bad">{msg}</p>{ref && <p className="otp-sub" style={{ fontSize: 11, opacity: .6 }}>Reference: {ref}</p>}</>}
             {(state === "ready" || state === "checking") && <p className="otp-sub">We sent a 4-digit code to WhatsApp <b>{pretty}</b>. Enter it to place your order.</p>}
             {test && <p className="otp-test">Test mode: your code is <b>{test}</b></p>}
             <div className={"otp-in" + (shake ? " shake" : "")}>
