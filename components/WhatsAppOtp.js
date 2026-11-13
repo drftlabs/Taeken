@@ -63,7 +63,7 @@ export default function WhatsAppOtp({ phone, onVerified, onClose }) {
               <button type="button" className="otp-link" onClick={paste} disabled={state !== "ready"}>Paste code</button>
               <button type="button" className="otp-link" onClick={send} disabled={wait > 0 || state === "sending" || state === "checking"}>{wait > 0 ? `Resend in ${wait}s` : "Resend code"}</button>
             </div>
-            <p className="otp-foot">Wrong number? <button type="button" className="otp-link" onClick={onClose}>Edit it</button>. No need to tap submit, it places the order as soon as the 4th digit is in.</p>
+            <p className="otp-foot">Wrong number? <button type="button" className="otp-link" onClick={onClose}>Edit it</button>.</p>
           </>
         )}
       </div>
