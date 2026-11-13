@@ -1,3 +1,4 @@
+import { optimg } from "@/lib/img";
 import Link from "next/link";
 
 // Image slot: shows the uploaded image, or a clean dark placeholder until one is added in admin.
@@ -6,8 +7,8 @@ export function Media({ src, mobile, alt = "", position = "50% 50%", ghost = "",
     <div className={"media" + (src ? " has-img" : "")} style={{ "--pos": position, "--fit": fit === "contain" ? "contain" : "cover" }}>
       {!src && <div className="ph">{ghost && <span className="ghost" aria-hidden="true">{ghost}</span>}{tag && <span className="idtag">{tag}</span>}</div>}
       {src && (mobile ? (
-        <picture><source media="(max-width:600px)" srcSet={mobile} /><img src={src} alt={alt} loading="lazy" decoding="async" /></picture>
-      ) : <img src={src} alt={alt} loading="lazy" decoding="async" />)}
+        <picture><source media="(max-width:600px)" srcSet={optimg(mobile, 750)} /><img src={optimg(src, 1920)} alt={alt} loading="lazy" decoding="async" /></picture>
+      ) : <img src={optimg(src, 1920)} alt={alt} loading="lazy" decoding="async" />)}
     </div>
   );
 }

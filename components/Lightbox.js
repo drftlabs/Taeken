@@ -1,4 +1,5 @@
 "use client";
+import { optimg } from "@/lib/img";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -76,7 +77,7 @@ export default function Lightbox({ images, index, name, onClose, onIndex, startZ
         </div>
       </div>
       <div className={"lb-stage" + (zoomed ? " zoomed" : "")} ref={box} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-        <img src={images[index]} alt={`${name}, view ${index + 1}`} draggable="false" style={{ transform: `translate(${t.x}px,${t.y}px) scale(${t.s})`, transition: smooth ? "transform .28s cubic-bezier(.2,.8,.2,1)" : "none" }} />
+        <img src={optimg(images[index], 1920)} alt={`${name}, view ${index + 1}`} draggable="false" style={{ transform: `translate(${t.x}px,${t.y}px) scale(${t.s})`, transition: smooth ? "transform .28s cubic-bezier(.2,.8,.2,1)" : "none" }} />
       </div>
       {n > 1 && !zoomed && <><button className="lb-n prev" aria-label="Previous photo" onClick={() => go(-1)}>‹</button><button className="lb-n next" aria-label="Next photo" onClick={() => go(1)}>›</button></>}
       <p className="lb-h">{zoomed ? "Drag to look around · double-tap to reset" : "Pinch or double-tap to zoom"}</p>

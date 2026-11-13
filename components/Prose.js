@@ -1,9 +1,10 @@
+import { optimg } from "@/lib/img";
 // Tiny renderer for policy text: "## Heading", "- bullet", blank-line paragraphs, **bold**.
 const inline = (t) => t.split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith("**") ? <strong key={i}>{p.slice(2, -2)}</strong> : p));
 export default function Prose({ text }) {
   const out = []; let list = [], para = [], imgs = [];
   const flushP = () => { if (para.length) { out.push(<p key={out.length}>{para.map((l, i) => <span key={i}>{inline(l)}{i < para.length - 1 && <br />}</span>)}</p>); para = []; } };
-  const flushI = () => { if (!imgs.length) return; const f = (m, k) => <figure key={k}><img src={m[2]} alt={m[1]} loading="lazy" decoding="async" /></figure>; out.push(imgs.length === 1 ? f(imgs[0], out.length) : <div className="fig-row" key={out.length} style={{ "--n": Math.min(imgs.length, 3) }}>{imgs.map((m, k) => f(m, k))}</div>); imgs = []; };
+  const flushI = () => { if (!imgs.length) return; const f = (m, k) => <figure key={k}><img src={optimg(m[2], 1080)} alt={m[1]} loading="lazy" decoding="async" /></figure>; out.push(imgs.length === 1 ? f(imgs[0], out.length) : <div className="fig-row" key={out.length} style={{ "--n": Math.min(imgs.length, 3) }}>{imgs.map((m, k) => f(m, k))}</div>); imgs = []; };
   const flushL = () => { if (list.length) { out.push(<ul key={out.length}>{list.map((l, i) => <li key={i}>{inline(l)}</li>)}</ul>); list = []; } };
   for (const raw of String(text).split("\n")) {
     const l = raw.trim();

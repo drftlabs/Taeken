@@ -1,4 +1,5 @@
 "use client";
+import { optimg } from "@/lib/img";
 import { useEffect, useState } from "react";
 import { inr } from "@/lib/format";
 
@@ -10,7 +11,7 @@ export default function OrderSummary({ order }) {
   return (
     <div className="ok-sum">
       <h2>Your order</h2>
-      {d.items.map((i, k) => <div className="ok-it" key={k}>{i.img ? <img src={i.img} alt="" /> : <i />}<div><b>{i.n}</b><span>UK {i.s}{i.c ? ` · ${i.c}` : ""} · Qty {i.q}</span></div><em>{inr(i.p * i.q)}</em></div>)}
+      {d.items.map((i, k) => <div className="ok-it" key={k}>{i.img ? <img src={optimg(i.img, 256)} alt="" /> : <i />}<div><b>{i.n}</b><span>UK {i.s}{i.c ? ` · ${i.c}` : ""} · Qty {i.q}</span></div><em>{inr(i.p * i.q)}</em></div>)}
       <div className="ok-to"><span>Delivering to</span><b>{d.name}</b><small>{d.addr}</small></div>
     </div>
   );

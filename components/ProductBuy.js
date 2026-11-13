@@ -1,4 +1,5 @@
 "use client";
+import { optimg } from "@/lib/img";
 import { useRef, useState } from "react";
 import { useShop } from "./ShopProvider";
 import { inr } from "@/lib/format";
@@ -39,7 +40,7 @@ export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false })
       {/* floating checkout: appears the moment a size is picked */}
       {!sold && (
         <div className={"float-co" + (size ? " show" : "")} aria-hidden={!size}>
-          <div className="fc-info">{p.images?.[0] && <img src={p.images[0]} alt="" />}<div><b>{p.name}</b><small>UK {size}{color ? ` · ${color.name}` : ""} · {inr(p.price)}</small></div></div>
+          <div className="fc-info">{p.images?.[0] && <img src={optimg(p.images[0], 256)} alt="" />}<div><b>{p.name}</b><small>UK {size}{color ? ` · ${color.name}` : ""} · {inr(p.price)}</small></div></div>
           <button className="fc-bag" tabIndex={size ? 0 : -1} aria-label="Add to bag" onClick={() => { addBag(); }} title="Add to bag"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg></button>
           <button className="btn fc-go" tabIndex={size ? 0 : -1} onClick={buyNow}><Lock /> Checkout <Arrow /></button>
         </div>

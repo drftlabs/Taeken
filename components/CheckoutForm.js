@@ -9,6 +9,7 @@ import { ping, ids } from "@/lib/analytics";
 import { priceOrder } from "@/lib/pricing";
 import { lookupPin } from "@/lib/pin";
 import { Arrow } from "./Media";
+import { optimg } from "@/lib/img";
 import WhatsAppOtp from "./WhatsAppOtp";
 
 function loadRzp() {
@@ -146,7 +147,7 @@ export default function CheckoutForm({ modal = false, onClose }) {
             <h2><i>03</i>Order summary</h2>
             {eta && <p className="co-eta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17" r="1.6" /><circle cx="17" cy="17" r="1.6" /></svg><span>Estimated delivery: <b>{eta}</b></span></p>}
             <div className="co-sum">
-              {items.map((i) => <div className="li" key={i.id + i.size + (i.color || "")}><div className="thumb">{i.image && <img src={i.image} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size}{i.colorName ? ` · ${i.colorName}` : ""}</small>
+              {items.map((i) => <div className="li" key={i.id + i.size + (i.color || "")}><div className="thumb">{i.image && <img src={optimg(i.image, 256)} alt={i.name} />}</div><div><h3>{i.name}</h3><small>UK {i.size}{i.colorName ? ` · ${i.colorName}` : ""}</small>
                 <div className="co-qty"><button type="button" aria-label="Decrease quantity" onClick={() => setQty(i.id, i.size, i.qty - 1, i.color)}>−</button><span>{i.qty}</span><button type="button" aria-label="Increase quantity" onClick={() => setQty(i.id, i.size, Math.min(10, i.qty + 1), i.color)}>+</button><button type="button" className="co-rm" onClick={() => remove(i.id, i.size, i.color)}>Remove</button></div></div><div className="pr">{inr(i.price * i.qty)}</div></div>)}
               <div className="code-row">{rule ? <div className="code-ok"><b>{rule.code}</b> applied <button type="button" onClick={() => { setRule(null); setCode(""); setCodeMsg(null); }}>Remove</button></div> : <><input aria-label="Discount code" placeholder="Discount code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyCode())} /><button type="button" onClick={applyCode}>Apply</button></>}</div>
               {codeMsg && <p className={"hint" + (codeMsg.ok ? " ok" : " bad")}>{codeMsg.t}</p>}

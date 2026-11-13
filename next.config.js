@@ -2,6 +2,11 @@
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   poweredByHeader: false,
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/**" }],
+    minimumCacheTTL: 31536000,
+    formats: ["image/webp"],
+  },
   async headers() {
     return [
       {

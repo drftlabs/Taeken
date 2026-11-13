@@ -1,3 +1,4 @@
+import { optimg } from "@/lib/img";
 import Hero from "./Hero";
 import ProductGrid from "./ProductGrid";
 import { Media, SmartLink, Arrow, lines } from "./Media";
@@ -86,7 +87,7 @@ export function HeroBlock({ slides }) { return <Hero slides={slides} />; }
 // Large full-width picture. Any shape: "contain" shows the whole image (e.g. 1:1), "cover" fills the strip.
 export function ImageBlock({ c }) {
   if (!c.image) return null;
-  const img = <picture>{c.image_mobile && <source media="(max-width:600px)" srcSet={c.image_mobile} />}<img src={c.image} alt={c.alt || c.title || ""} loading="lazy" decoding="async" /></picture>;
+  const img = <picture>{c.image_mobile && <source media="(max-width:600px)" srcSet={optimg(c.image_mobile, 750)} />}<img src={optimg(c.image, 1920)} alt={c.alt || c.title || ""} loading="lazy" decoding="async" /></picture>;
   return (
     <section className={"bigimg " + (c.fit === "cover" ? "cover" : "contain")} aria-label={c.title || "Featured image"}>
       <DM className="bi-dm l" dir="right" n={3} /><DM className="bi-dm r" dir="left" n={3} />

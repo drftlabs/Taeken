@@ -1,4 +1,5 @@
 "use client";
+import { optimg } from "@/lib/img";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useShop } from "./ShopProvider";
@@ -29,7 +30,7 @@ export default function ProductCard({ p, colorMap = {}, extra = false, inert = f
     <article ref={ref} className={"card" + (extra ? " extra" : "") + (sizing ? " sizing" : "")} style={{ "--i": index }} inert={inert ? "" : undefined}>
       <div className="p-visual" data-k={kanjiFor(p.slug)} data-n={String(index + 1).padStart(2, "0")}>
         <Link className={"p-img" + (p.images?.[0] ? " has-img" : "") + (p.images?.[1] ? " has-alt" : "")} href={`/products/${p.slug}`} aria-label={`${p.name}, ${inr(p.price)}`}>
-          {p.images?.[0] ? <><img className="i1" src={p.images[0]} alt={p.name} loading="lazy" decoding="async" />{p.images[1] && <img className="i2" src={p.images[1]} alt="" aria-hidden="true" loading="lazy" decoding="async" />}</> : <span className="corners" />}
+          {p.images?.[0] ? <><img className="i1" src={optimg(p.images[0], 640)} alt={p.name} loading="lazy" decoding="async" />{p.images[1] && <img className="i2" src={optimg(p.images[1], 640)} alt="" aria-hidden="true" loading="lazy" decoding="async" />}</> : <span className="corners" />}
         </Link>
         <DM className="card-dm" n={2} />
         {p.tagObjs?.length > 0 && <div className="tags">{p.tagObjs.slice(0, 2).map((t) => <span key={t.slug} className="tag" style={{ background: t.bg, color: t.fg }}>{t.name}</span>)}</div>}

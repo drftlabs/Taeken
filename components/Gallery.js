@@ -1,4 +1,5 @@
 "use client";
+import { optimg } from "@/lib/img";
 import { useEffect, useRef, useState } from "react";
 import Lightbox from "./Lightbox";
 
@@ -69,7 +70,7 @@ export default function Gallery({ images, name, kanji = ["闘", "走"] }) {
           <div className="gal-track" style={{ transform: `translateX(-${pos * 100}%)`, transition: anim ? "transform 1.1s cubic-bezier(.65,0,.35,1)" : "none" }} onTransitionEnd={ended}>
             {slides.map((src, k) => (
               <div className="gal-slide" key={k} aria-hidden={k % n !== cur}>
-                <button className="gal-zoom" onMouseMove={move} onClick={() => { setZoom(false); setBox(true); }} aria-label="Open photo full screen"><img src={src} alt={`${name}, view ${(k % n) + 1}`} style={k % n === cur && (pzs.s > 1 || pzs.sm) ? { transform: `translate(${pzs.x}px,${pzs.y}px) scale(${pzs.s})`, transition: pzs.sm ? "transform .3s cubic-bezier(.2,.8,.2,1)" : "none", transformOrigin: "50% 50%" } : { transformOrigin: org }} fetchPriority={k === 0 ? "high" : undefined} decoding="async" draggable="false" /></button>
+                <button className="gal-zoom" onMouseMove={move} onClick={() => { setZoom(false); setBox(true); }} aria-label="Open photo full screen"><img src={optimg(src, 1200)} alt={`${name}, view ${(k % n) + 1}`} style={k % n === cur && (pzs.s > 1 || pzs.sm) ? { transform: `translate(${pzs.x}px,${pzs.y}px) scale(${pzs.s})`, transition: pzs.sm ? "transform .3s cubic-bezier(.2,.8,.2,1)" : "none", transformOrigin: "50% 50%" } : { transformOrigin: org }} fetchPriority={k === 0 ? "high" : undefined} decoding="async" draggable="false" /></button>
               </div>
             ))}
           </div>
@@ -77,7 +78,7 @@ export default function Gallery({ images, name, kanji = ["闘", "走"] }) {
         {n > 0 && <button className="gal-zbtn" aria-label="Zoom photo" onClick={() => { setZoom(true); setBox(true); }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2M11 8v6M8 11h6" /></svg><span>Zoom</span></button>}
         {loop && <div className="gal-dots" aria-hidden="true">{images.map((_, k) => <i key={k} className={k === cur ? "on" : ""} />)}</div>}
       </div>
-      {loop && <div className="thumbs">{images.map((src, k) => <button key={k} className={k === cur ? "on" : ""} aria-label={`Show image ${k + 1}`} onClick={() => to(k)}><img src={src} alt="" loading="lazy" decoding="async" /></button>)}</div>}
+      {loop && <div className="thumbs">{images.map((src, k) => <button key={k} className={k === cur ? "on" : ""} aria-label={`Show image ${k + 1}`} onClick={() => to(k)}><img src={optimg(src, 256)} alt="" loading="lazy" decoding="async" /></button>)}</div>}
       {box && <Lightbox images={images} index={cur} name={name} startZoom={zoom} onClose={() => setBox(false)} onIndex={(k) => setPos(k)} />}
     </div>
   );

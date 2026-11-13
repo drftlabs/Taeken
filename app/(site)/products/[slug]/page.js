@@ -1,3 +1,4 @@
+import { optimg } from "@/lib/img";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getProducts, getColors, getCollections, getSettings } from "@/lib/data";
@@ -62,7 +63,7 @@ export default async function ProductPage({ params }) {
             </Reveal>
             {p.images?.length > 0 && <Reveal className="pdp-last" delay={60}>
               <span className="pl-k" aria-hidden="true">{kanjiPair(p.slug)[1]}</span><span className="pl-g" aria-hidden="true" />
-              <img src={p.images[p.images.length - 1]} alt={`${p.name}, final view`} loading="lazy" decoding="async" />
+              <img src={optimg(p.images[p.images.length - 1], 1200)} alt={`${p.name}, final view`} loading="lazy" decoding="async" />
               <DM className="pl-dm" n={3} /><span className="pl-t" aria-hidden="true">No.01 · {p.name}</span>
             </Reveal>}
             <Reveal className="acc" delay={120}>
@@ -73,7 +74,7 @@ export default async function ProductPage({ params }) {
           </div>
         </div>
         {p.long_description && <Reveal as="section" className="story"><span className="story-k" aria-hidden="true">物語</span><div className="story-in"><p className="eyebrow">The story</p><Prose text={p.long_description} /></div></Reveal>}
-        {p.extra_images?.length > 0 && <Reveal as="section" className="look" aria-label="More photos"><p className="eyebrow">Look closer</p><div className="look-grid">{p.extra_images.map((src, i) => <figure key={i}><img src={src} alt={`${p.name}, detail ${i + 1}`} loading="lazy" decoding="async" /></figure>)}</div></Reveal>}
+        {p.extra_images?.length > 0 && <Reveal as="section" className="look" aria-label="More photos"><p className="eyebrow">Look closer</p><div className="look-grid">{p.extra_images.map((src, i) => <figure key={i}><img src={optimg(src, 828)} alt={`${p.name}, detail ${i + 1}`} loading="lazy" decoding="async" /></figure>)}</div></Reveal>}
         <RecentlyViewed slug={p.slug} />
         {related.length > 0 && <Reveal as="section" className="related"><div className="sec-head"><div><p className="eyebrow">Recommended</p><h2 className="h2">You may <em>also like</em></h2></div></div><ProductGrid products={related} colors={colors} collapse={false} /></Reveal>}
       </div>
