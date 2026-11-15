@@ -453,3 +453,26 @@ a.bi-in:hover{transform:scale(1.012)}
 @keyframes draw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
 .otp-ok b{font:400 26px var(--display);letter-spacing:.08em;text-transform:uppercase;color:#7fd09a}.otp-ok small{color:var(--concrete)}
 @media(max-width:380px){.otp-in input{width:50px;height:58px}}
+
+/* ---- PDP tidy-up: one-row sizes, compact trust badges, tighter bottom ---- */
+.size-grid{display:flex!important;flex-wrap:nowrap;gap:5px}
+.size-grid button{flex:1 1 0;min-width:0;padding:10px 0!important;font-size:13px!important}
+.pdp-price{margin-bottom:14px}
+.trust2{margin:16px 0!important;grid-template-columns:1fr 1fr!important}
+.trust2 li{display:flex!important;align-items:center;gap:8px;padding:9px 10px!important;flex-wrap:wrap}
+.trust2 svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
+.trust2 b{font-size:11.5px!important;letter-spacing:.02em;line-height:1.15}
+.trust2 small{font-size:10.5px!important;flex-basis:100%;padding-left:26px;margin-top:-6px;line-height:1.1}
+.pdp-page{padding-bottom:clamp(20px,3vw,36px)!important}
+.pdp-page .related{margin-top:clamp(44px,6vw,80px)}
+@media(max-width:860px){.pdp-page.has-sticky{padding-bottom:100px!important}}
+
+/* sizes: low-stock tag + sold-out "notify me" */
+.size-grid button{position:relative}
+.size-grid .lw{position:absolute;top:-7px;right:-2px;font:800 8px/1 var(--body,inherit);letter-spacing:.02em;font-style:normal;background:var(--red);color:#fff;padding:2px 4px;white-space:nowrap;pointer-events:none}
+.size-grid button.out{color:#5d5d62;border-color:#333;text-decoration:line-through;cursor:pointer;opacity:.8}
+.size-grid button.out:hover{border-color:var(--chalk);color:var(--chalk);transform:none}
+.notify{margin-top:12px;padding:12px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.notify p{font-size:12px;color:var(--concrete);margin:0 0 8px}.notify p b{color:var(--chalk)}
+.n-row{display:flex;gap:8px}.n-row input{flex:1;min-width:0;padding:11px 12px;background:var(--bg);border:1px solid #55555a;color:var(--chalk);font-size:14px}
+.n-row .btn{padding:0 16px;white-space:nowrap;font-size:12px}.n-ok{color:#5fd38d!important;margin:0!important}.n-err{color:#ff8a8a!important;margin:8px 0 0!important}
