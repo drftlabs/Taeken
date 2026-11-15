@@ -5,12 +5,14 @@ import { useShop } from "./ShopProvider";
 import { inr } from "@/lib/format";
 import { Arrow } from "./Media";
 import SizeGuide from "./SizeGuide";
+import { notifyRestock } from "@/lib/actions/forms";
 
 const Lock = () => <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 16, height: 16, stroke: "currentColor", fill: "none", strokeWidth: 2 }}><rect x="5" y="11" width="14" height="9" rx="1" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>;
 
 export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false }) {
   const { add, wish, toggleWish, say, setQc, setDrawer } = useShop();
   const [size, setSize] = useState(null), [err, setErr] = useState(false), [ci, setCi] = useState(0), [just, setJust] = useState(false);
+  const [nsize, setNsize] = useState(null), [nc, setNc] = useState(""), [nst, setNst] = useState(null), [nbusy, setNbusy] = useState(false);
   const color = colorOpts[ci] || null;
   const gridRef = useRef();
   const stock = size ? Number(p.sizes[size]) : 0;
@@ -28,8 +30,16 @@ export default function ProductBuy({ p, sizeKeys, colorOpts = [], cod = false })
         <div className="pdp-sw" role="radiogroup" aria-label="Colour">{colorOpts.map((o, k) => <button key={o.slug} role="radio" aria-checked={k === ci} className={k === ci ? "on" : ""} onClick={() => setCi(k)}><i style={{ background: o.hex }} />{o.name}</button>)}</div></>}
       <div className="opt-label"><span>UK size</span><span className="ol-r">{size ? <b>UK {size}</b> : <em>Select one</em>}<SizeGuide /></span></div>
       <div className={"size-grid" + (err && !size ? " err" : "")} ref={gridRef} role="radiogroup" aria-label="UK size">
-        {sizeKeys.map((s) => <button key={s} role="radio" aria-checked={size === s} className={size === s ? "on" : ""} disabled={Number(p.sizes[s]) <= 0} onClick={() => { setSize(s); setErr(false); }} aria-label={`UK ${s}${Number(p.sizes[s]) <= 0 ? ", sold out" : ""}`}>{s}</button>)}
+        {sizeKeys.map((s) => { const n = Number(p.sizes[s]) || 0; return <button key={s} role="radio" aria-checked={size === s} className={(size === s ? "on" : "") + (n <= 0 ? " out" : "")} onClick={() => { if (n <= 0) { setNsize(s); setNst(null); setSize(null); return; } setNsize(null); setSize(s); setErr(false); }} aria-label={`UK ${s}${n <= 0 ? ", sold out, tap to get notified" : n <= lowAt ? `, only ${n} left` : ""}`}>{s}{n > 0 && n <= lowAt && <em className="lw">{n} left</em>}</button>; })}
       </div>
+      {nsize && (
+        <form className="notify" onSubmit={async (e) => { e.preventDefault(); setNbusy(true); const r = await notifyRestock({ product: p.name, slug: p.slug, size: nsize, contact: nc, hp: e.target.hp.value }); setNbusy(false); setNst(r); if (r.ok) setNc(""); }}>
+          {nst?.ok ? <p className="n-ok">✓ Done. We'll let you know when UK {nsize} is back.</p> : <>
+            <p><b>UK {nsize}</b> is sold out. Get notified when it's back:</p>
+            <div className="n-row"><input value={nc} onChange={(e) => setNc(e.target.value)} placeholder="Email or WhatsApp number" aria-label="Email or mobile number" autoComplete="email" /><input name="hp" tabIndex={-1} autoComplete="off" style={{ display: "none" }} /><button className="btn" disabled={nbusy}>{nbusy ? "…" : "Notify me"}</button></div>
+            {nst?.error && <p className="n-err">{nst.error}</p>}</>}
+        </form>
+      )}
       {size && stock > 0 && stock <= lowAt ? <p className="low">⚡ Only {stock} left in UK {size}</p> : !sold && totalLeft <= lowAt * 2 ? <p className="low">⚡ Selling fast: {totalLeft} pairs left in total</p> : null}
       <div className="pdp-actions">
         <button className={"btn addbtn" + (just ? " done" : "")} disabled={sold} onClick={addBag}>{sold ? "Sold out" : just ? "Added ✓" : "Add to bag"}{!sold && !just && <Arrow />}</button>
